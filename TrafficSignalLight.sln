@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32630.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficSignalLight", "TrafficSignalLight\TrafficSignalLight.csproj", "{4BBE5FAE-B1AB-417F-AF0C-65A0E931D199}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrafficSignalLight.DB", "TrafficSignalLight.DB\TrafficSignalLight.DB.csproj", "{04F4CCBD-AAA4-443C-89BD-E871A1B83614}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BBE5FAE-B1AB-417F-AF0C-65A0E931D199}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BBE5FAE-B1AB-417F-AF0C-65A0E931D199}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BBE5FAE-B1AB-417F-AF0C-65A0E931D199}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BBE5FAE-B1AB-417F-AF0C-65A0E931D199}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04F4CCBD-AAA4-443C-89BD-E871A1B83614}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04F4CCBD-AAA4-443C-89BD-E871A1B83614}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04F4CCBD-AAA4-443C-89BD-E871A1B83614}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04F4CCBD-AAA4-443C-89BD-E871A1B83614}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3A4AA18A-1094-456C-AC7D-89EEB7CBB7D5}
+	EndGlobalSection
+EndGlobal

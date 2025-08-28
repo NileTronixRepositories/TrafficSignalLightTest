@@ -1,0 +1,80 @@
+﻿@model TrafficSignalLight.DB.Template
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Template</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Red)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Red)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Green)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Green)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Amber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Amber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GreenAmberOverlab)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GreenAmberOverlab)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Pedstrain)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Pedstrain)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ShowSigneCounter)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShowSigneCounter)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ShowPedstrainCounter)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShowPedstrainCounter)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

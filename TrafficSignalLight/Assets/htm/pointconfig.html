@@ -1,0 +1,974 @@
+﻿<!doctype html>
+<!--
+ @license
+ Copyright 2019 Google LLC. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+-->
+<html>
+<head>
+    <title>Traffic Point Configuration</title>
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="../js/jquery-2.2.4.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet" />
+
+    <link href="../css/fontawesome-all.min.css" />
+    <script src="../js/bootstrap-input-spinner.js"></script>
+    <!--<script src="../js/html2canvas.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <!-- jsFiddle will insert css and js -->
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .bg-signin {
+            background-image: url(https://cloud.maptiler.com/static/img/auth-bg.svg);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position-y: left;
+        }
+
+
+        .map-view {
+            height: 76vh;
+            width: 64vw;
+            margin-left: 9.5vh;
+            margin-top: 0.1vh;
+            float: left;
+            border-radius: 5px 0px 0px 150px;
+        }
+
+        .point-select {
+            height: 80vh;
+            width: 25vw;
+            background-color: transparent;
+            float: left;
+            padding-top: 2vh;
+        }
+
+        .nav-side {
+            height: 80vh;
+            width: 5vw;
+            background-color: transparent;
+            float: left;
+        }
+
+        .point-settings {
+            height: 10vh;
+            width: 70vw;
+            background-color: rgb(239,244,255);
+            margin-top: -2vh;
+            margin-left: 2vh;
+            float: right;
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .off {
+            filter: grayscale(1);
+        }
+
+        .on {
+            filter: grayscale(0);
+        }
+
+        .temp-r {
+            color: red;
+            font-weight: bolder;
+        }
+
+        .temp-a {
+            color: #ffd700;
+            font-weight: bolder;
+        }
+
+        .temp-g {
+            color: limegreen;
+            font-weight: bolder;
+        }
+
+        img.sticky {
+            position: -webkit-sticky;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 150px;
+        }
+    </style>
+    <script>
+        var governorates = [];
+        var areas = [];
+        var locations = [];
+        var templates = [];
+        var lightpatterns = [];
+        var templatepatterns = [];
+        var markers = [];
+        var new_govid = -1000;
+        var new_areaid = -2000;
+        var map = null;
+        var geocoder = null;
+        var infowindow = null;
+        const image = 'http://localhost/TrafficSignalLight/Assets/img/traffic-light-305721.png';
+        var currentPosition = '';
+        var currentSignID = 0;
+        var currentLigthPatternID = 0;
+        var currentTempID = 0;
+        function autoComplete() {
+            $('#search').autocomplete({
+                minLength: 2,
+                source: function (request, response) {
+                    response($.map(locations, function (obj, key) {
+
+                        var name = obj.Name.toUpperCase();
+                        var ip = obj.IPAddress.toUpperCase();
+
+                        if (name.indexOf(request.term.toUpperCase()) != -1) {
+                            return {
+                                label: obj.Name.replace(/   /g, " ") + " [ " + obj.IPAddress + " ]", // Label for Display
+                                value: obj.ID // Value
+                            }
+                        } else if (ip.indexOf(request.term.toUpperCase()) != -1) {
+                            return {
+                                label: obj.Name.replace(/   /g, " ") + " [ " + obj.IPAddress + " ]", // Label for Display
+                                value: obj.ID // Value
+                            }
+                        } else {
+                            return null;
+                        }
+                    }));
+                },
+                focus: function (event, ui) {
+                    event.preventDefault();
+                },
+                // Once a value in the drop down list is selected, do the following:
+                select: function (event, ui) {
+                    event.preventDefault();
+                    // place the person.given_name value into the textfield called 'select_origin'...
+                    $('#search').val(ui.item.label);
+                    var _id = ui.item.value;
+                    var obj = null;
+                    $.each(locations, function (i, l) {
+                        if (l.ID == _id) {
+                            obj = l;
+                        }
+                    });
+                    if (obj != null) {
+                        clearfields();
+
+                        if (obj.LightPatternID > 0) {
+                            $('.btn-increment').removeClass('disabled');
+                            $('.btn-decrement').removeClass('disabled');
+                            $('.temp-r').removeClass('disabled');
+                            $('.temp-a').removeClass('disabled');
+                            $('.temp-g').removeClass('disabled');
+                            $('.temp-r').val(obj.Red);
+                            $('.temp-a').val(obj.Amber);
+                            $('.temp-g').val(obj.Green);
+                        }
+                        else {
+                            $.each(templates, function (i, t) {
+                                if (t.ID == obj.TemplateID) {
+                                    currentTempID = obj.ID;
+                                    $('.btn-increment').addClass('disabled');
+                                    $('.btn-decrement').addClass('disabled');
+                                    $('.temp-r').addClass('disabled');
+                                    $('.temp-a').addClass('disabled');
+                                    $('.temp-g').addClass('disabled');
+                                }
+                            });
+                        }
+
+                        $('tem-list').val(currentTempID);
+
+                        $('.gov-list').val(obj.GovernerateID);
+                        $('.area-list').val(obj.AreaID);
+
+                        $('.sign-name').val(obj.Name);
+                        $('.sign-long').val(obj.Longitude);
+                        $('.sign-lat').val(obj.Latitude);
+                        $('.sign-ipaddress').val(obj.IPAddress);
+                        $('.temp-list').val(obj.TemplateID);
+                        currentSignID = obj.ID;
+                    }
+                }
+            });
+        }
+        $(document).ready(function () {
+            $("input[type='number']").inputSpinner();
+            $(".input-group").css('margin-left', '-10%');
+            $(".input-group").parent().css('width', '15%');
+            loadserverdata();
+            setInterval(play, 100);
+            setInterval(function () { currentTimeVal += 50; }, 50);
+
+            $('.btn-Run').click(function () {
+                runCommand();
+                getValues();
+                run = true;
+            });
+
+            $('.btn-Apply').click(function () {
+                var obj = new Object();
+                obj.Name = $('.sign-name').val();
+                obj.Longitude = $('.sign-long').val();
+                obj.Latitude = $('.sign-lat').val();
+                obj.IPAddress = $('.sign-ipaddress').val();
+                obj.AreaID = $('.area-list').val();
+                obj.R = $('.temp-r').val();
+                obj.A = $('.temp-a').val();
+                obj.G = $('.temp-g').val();
+                obj.bR = _command.BlinkRed;
+                obj.bA = _command.BlinkYellow;
+                obj.bG = _command.BlinkGreen;
+                obj.cM = _command.ChangeMain;
+
+                updateLocation(obj);
+            });
+
+        });
+
+        var run = false;
+        var SECOND = 1000;
+        var RED_COLOR_INDEX = 1;
+        var YELLOW_COLOR_INDEX = 2;
+        var GREEN_COLOR_INDEX = 3;
+        var Red, Yellow, Green = 0;
+        var isActive = true;
+        var redActive1, yellowActive1, greenActive1 = false;
+        var redActive2, yellowActive2, greenActive2 = false;
+
+        var CrossAsMain = false;
+        var lastOutputChangeTime = 0;
+        var lastOutputCheckTime = 0;
+        var _currentColorIndex = 0;
+        var _crossCurrentColorIndex = 0;
+        var mainIndex = true;
+
+        var currentTimeVal = 50;
+
+        function play() {
+            if (!run) return;
+            if (Red == 0 && Green == 0 && Yellow == 0) {
+                getValues();
+                mainIndex = !mainIndex;
+                currentTimeVal = 50;
+            }
+
+            if ((_command.BlinkInterval > 0 && (millis() - lastOutputCheckTime >= _command.BlinkInterval)) || millis() - lastOutputChangeTime >= SECOND) {
+                // deal with command
+                if (Green > 0) {
+                    _currentColorIndex = GREEN_COLOR_INDEX;
+                    if (millis() - lastOutputChangeTime >= SECOND) {
+                        if (_command.GreenInterval > 1) Green--;
+                        lastOutputChangeTime = millis();
+                    }
+                } else if (Yellow > 0) {
+                    _currentColorIndex = YELLOW_COLOR_INDEX;
+                    if (millis() - lastOutputChangeTime >= SECOND) {
+                        if (_command.YellowInterval > 1) Yellow--;
+                        lastOutputChangeTime = millis();
+                    }
+                } else if (Red > 0) {
+                    _currentColorIndex = RED_COLOR_INDEX;
+                    if (millis() - lastOutputChangeTime >= SECOND) {
+                        if (_command.RedInterval > 1) Red--;
+                        lastOutputChangeTime = millis();
+                    }
+                }
+
+                switch (_currentColorIndex) {
+                    case RED_COLOR_INDEX:
+                        redLight(mainIndex);
+                        _mainCurrentColorIndex = RED_COLOR_INDEX;
+
+                        if (_command.CrossAsMain) {
+                            redLight(!mainIndex);
+                            _crossCurrentColorIndex = RED_COLOR_INDEX;
+                        } else {
+                            greenLight(!mainIndex);
+                            _crossCurrentColorIndex = GREEN_COLOR_INDEX;
+                        }
+                        break;
+                    case YELLOW_COLOR_INDEX:
+                        yellowLight(mainIndex);
+                        _mainCurrentColorIndex = YELLOW_COLOR_INDEX;
+
+                        if (_command.CrossAsMain) {
+                            yellowLight(!mainIndex);
+                            _crossCurrentColorIndex = YELLOW_COLOR_INDEX;
+                        } else {
+                            redLight(!mainIndex);
+                            _crossCurrentColorIndex = RED_COLOR_INDEX;
+                        }
+                        break;
+                    case GREEN_COLOR_INDEX:
+                        greenLight(mainIndex);
+                        _mainCurrentColorIndex = GREEN_COLOR_INDEX;
+
+                        if (_command.CrossAsMain) {
+                            greenLight(mainIndex);
+                            _crossCurrentColorIndex = GREEN_COLOR_INDEX;
+                        } else {
+                            redLight(!mainIndex);
+                            _crossCurrentColorIndex = RED_COLOR_INDEX;
+                        }
+                        break;
+                }
+
+                lastOutputCheckTime = millis();
+
+                $('.counter-a').html(Yellow);
+                $('.counter-g').html(Green);
+                $('.counter-r').html(Red);
+
+                if (_command.BlinkInterval > 0 && (_command.BlinkRed || _command.BlinkYellow || _command.BlinkGreen)) isActive = !isActive;
+            }
+        }
+
+        function getValues() {
+            Red = _command.RedInterval;
+            Yellow = _command.YellowInterval;
+            Green = _command.GreenInterval;
+
+            mainIndex = _command.ChangeMain;
+            CrossAsMain = _command.CrossAsMain;
+        }
+
+
+        var _command = new Object();
+        function runCommand() {
+            _command.BlinkInterval = 500;
+
+            _command.RedInterval = $('.temp-r').val();
+            _command.GreenInterval = $('.temp-g').val();
+            _command.YellowInterval = $('.temp-a').val();
+
+            _command.BlinkRed = $('#blinkRed').is(":checked");
+            _command.BlinkYellow = $('#blinkYellow').is(":checked");
+            _command.BlinkGreen = $('#blinkGreen').is(":checked");
+
+            _command.ChangeMain = $('#toggleMain').is(":checked");
+            _command.CrossAsMain = $('#applySame').is(":checked");
+
+            lastOutputChangeTime = 0;
+            lastOutputCheckTime = 0;
+            _currentColorIndex = 0;
+            _crossCurrentColorIndex = 0;
+            Red, Yellow, Green = 0;
+            isActive = true;
+            redActive1 = false; yellowActive1 = false; greenActive1 = false;
+            redActive2 = false; yellowActive2 = false; greenActive2 = false;
+            deactivateAll(true);
+            deactivateAll(false);
+        }
+
+        function millis() {
+            return currentTimeVal;
+        }
+        var LOW = 'on';
+        var HIGH = 'off';
+        function digitalWrite(el, val) {
+            if (val == LOW) {
+                $('.' + el).removeClass('off');
+                $('.' + el).addClass('on');
+            }
+            else if (val == HIGH) {
+                $('.' + el).removeClass('on');
+                $('.' + el).addClass('off');
+            }
+        }
+
+        function redLight(mainSet) {
+            switch (mainSet) {
+                case true:
+                    if (!redActive1 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive1 = false;
+                        yellowActive1 = false;
+                        redActive1 = isActive;
+                        digitalWrite('main-r', (!_command.BlinkRed || isActive) ? LOW : HIGH);
+                    }
+                    break;
+                case false:
+                    if (!redActive2 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive2 = false;
+                        yellowActive2 = false;
+                        redActive2 = isActive;
+                        digitalWrite('cross-r', (!_command.BlinkRed || isActive) ? LOW : HIGH);
+                    }
+                    break;
+            }
+        }
+
+        function yellowLight(mainSet) {
+            switch (mainSet) {
+                case true:
+                    if (!yellowActive1 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive1 = false;
+                        yellowActive1 = isActive;
+                        redActive1 = false;
+                        digitalWrite('main-y', (!_command.BlinkYellow || isActive) ? LOW : HIGH);
+                    }
+                    break;
+                case false:
+                    if (!yellowActive2 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive2 = false;
+                        yellowActive2 = isActive;
+                        redActive2 = false;
+                        digitalWrite('cross-y', (!_command.BlinkYellow || isActive) ? LOW : HIGH);
+                    }
+                    break;
+            }
+        }
+
+        function greenLight(mainSet) {
+            switch (mainSet) {
+                case true:
+                    if (!greenActive1 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive1 = isActive;
+                        yellowActive1 = false;
+                        redActive1 = false;
+                        digitalWrite('main-g', (!_command.BlinkGreen || isActive) ? LOW : HIGH);
+                    }
+                    break;
+                case false:
+                    if (!greenActive2 || !isActive) {
+                        deactivateAll(mainSet);
+                        greenActive2 = isActive;
+                        yellowActive2 = false;
+                        redActive2 = false;
+                        digitalWrite('cross-g', (!_command.BlinkGreen || isActive) ? LOW : HIGH);
+                    }
+                    break;
+            }
+        }
+
+        function deactivateAll(mainSet) {
+            switch (mainSet) {
+                case true:
+                    redActive1 = false;
+                    yellowActive1 = false;
+                    greenActive1 = false;
+                    digitalWrite('main-r', HIGH);
+                    digitalWrite('main-y', HIGH);
+                    digitalWrite('main-g', HIGH);
+                    break;
+                case false:
+                    redActive2 = false;
+                    yellowActive2 = false;
+                    greenActive2 = false;
+                    digitalWrite('cross-r', HIGH);
+                    digitalWrite('cross-y', HIGH);
+                    digitalWrite('cross-g', HIGH);
+                    break;
+            }
+        }
+        /**************************************************/
+
+        function loadserverdata() {
+            governorates = [];
+            areas = [];
+            locations = [];
+            templates = [];
+            lightpatterns = [];
+            $('.gov-list')
+                .find('option')
+                .remove()
+                .end();
+            $('.area-list')
+                .find('option')
+                .remove()
+                .end();
+            $('.temp-list')
+                .find('option')
+                .remove()
+                .end();
+
+            clearfields();
+            setTimeout(listGovernrates, 500);
+            setTimeout(listAreas, 800);
+            setTimeout(listLocations, 1000);
+            setTimeout(listPatterns, 1100);
+            setTimeout(listTemplates, 1200);
+            setTimeout(listTemplatePatterns, 1400);
+            setTimeout(autoComplete, 1500);
+        }
+        function updateLocation(obj) {
+            $.ajax({
+                url: "http://127.0.0.1/TrafficSignalLight/api/Locations/Set",
+                data: {
+                    "ID": currentSignID,
+                    "GovernerateName": $('.gov-list  option:selected').text(),
+                    "AreaName": $('.area-list  option:selected').text(),
+                    "AreaID": obj.AreaID,
+                    "Name": obj.Name,
+                    "Longitude": obj.Longitude,
+                    "Latitude": obj.Latitude,
+                    "IPAddress": obj.IPAddress,
+                    "TempelateID": currentTempID,
+                    "LightPatternID": currentLigthPatternID, "R": obj.R, "A": obj.A, "G": obj.G, "bR": obj.bR, "bA": obj.bA, "bG": obj.bG, "cM": obj.cM
+                },
+                success: function (response) {
+                    if (response == 'Ok')
+                        loadserverdata();
+                    else
+                        alert(response);
+                },
+                error: function (xhr) {
+                }
+            });
+        }
+        function clearPattern() {
+            $('.temp-r').val(0);
+            $('.temp-a').val(0);
+            $('.temp-g').val(0);
+        }
+        function clearfields() {
+            clearPattern();
+            $('.temp-list').val(0);
+            $('.sign-name').val('');
+            $('.sign-long').val('');
+            $('.sign-lat').val('');
+            $('.sign-ipaddress').val('');
+            currentLigthPatternID = 0;
+            currentSignID = 0;
+            currentTempID = 0;
+        }
+        function getSignLightPattern(id) {
+            $.each(lightpatterns, function (i, obj) {
+                if (obj.ID == id) {
+                    currentLigthPatternID = obj.ID;
+                }
+            });
+        }
+
+        function listPatterns() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/Pattern/list',
+                type: "GET",
+                success: function (data) {
+                    $('.pattern-list').empty();
+                    patterns = JSON.parse(data);
+                    var Item = new Object();
+                    Item.ID = 0;
+                    Item.Name = '- New Pattern -';
+                    Item.Amber = 3;
+                    Item.Green = 37;
+                    Item.Red = 40;
+                    patterns.push(Item);
+
+                    $.each(patterns, function (i, obj) {
+                        $('.pattern-list').append($('<option>', {
+                            value: obj.ID,
+                            text: obj.Name
+                        }));
+                    });
+
+                    $('.pattern-list').val(0);
+                    currentLigthPatternID = 0;
+                    $('.pattern-list').on('change', function () {
+                        currentLigthPatternID = $(this).val();
+                        $.each(patterns, function (i, obj) {
+                            if (obj.ID == currentLigthPatternID) {
+                                $('.pattern-name').val(obj.Name);
+                                $('.temp-r').val(obj.Red);
+                                $('.temp-a').val(obj.Amber);
+                                $('.temp-g').val(obj.Green);
+                            }
+                        });
+                    });
+                },
+                error: function (jqXHR, exception) {
+                }
+            });
+        }
+        function listTemplatePatterns() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/TemplatePattern/list',
+                type: "GET",
+                success: function (data) {
+                    templatepatterns = JSON.parse(data);
+                },
+                error: function (jqXHR, exception) {
+                }
+            });
+        }
+        function listTemplates() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/Template/list',
+                type: "GET",
+                success: function (data) {
+                    templates = JSON.parse(data);
+                    var tempItem = new Object();
+                    tempItem.ID = 0;
+                    tempItem.Name = '- N/A -';
+                    templates.push(tempItem);
+
+                    $.each(templates, function (i, obj) {
+                        $('.temp-list').append($('<option>', {
+                            value: obj.ID,
+                            text: obj.Name
+                        }));
+                    });
+
+                    $('.temp-list').val(0);
+
+                    $('.temp-list').on('change', function () {
+                        var id = $(this).val();
+                        $.each(templates, function (i, obj) {
+                            if (obj.ID == id) {
+                                currentTempID = obj.ID;
+                            }
+                        });
+
+                        if (currentTempID > 0) {
+                            clearPattern();
+                            createTemplateTable(true);
+                        }
+                        else
+                            createTemplateTable(false);
+                    });
+                },
+                // Error handling
+                error: function (jqXHR, exception) {
+                    var msg = '';
+                    if (jqXHR.status === 0) {
+                        msg = 'Not connect.\n Verify Network.';
+                    } else if (jqXHR.status == 404) {
+                        msg = 'Requested page not found. [404]';
+                    } else if (jqXHR.status == 500) {
+                        msg = 'Internal Server Error [500].';
+                    } else if (exception === 'parsererror') {
+                        msg = 'Requested JSON parse failed.';
+                    } else if (exception === 'timeout') {
+                        msg = 'Time out error.';
+                    } else if (exception === 'abort') {
+                        msg = 'Ajax request aborted.';
+                    } else {
+                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    }
+                    alert(msg);
+                }
+            });
+        }
+
+        function createTemplateTable(showtemplatedetails) {
+            $('.template-details').html('');
+            if (showtemplatedetails) {
+                $('.light-val').css('display', 'none');
+                $('.template-details').css('display', '');
+            }
+            else {
+                $('.template-details').css('display', 'none');
+                $('.light-val').css('display', '');
+            }
+
+            var name = '';
+            var o = null;
+            $.each(templatepatterns, function (i, obj) {
+                if (obj.TemplateID == currentTempID) {
+                    o = obj;
+                    $.each(lightpatterns, function (i, pobj) {
+                        if (pobj.ID == obj.PetternID) {
+                            name = pobj.Name;
+                        }
+                    });
+
+
+                    if (o != null) {
+                        let dynamicRowHTML = `
+                                                <tr class="schedule-row" style="text-align:left;border-bottom: 2px solid #9ed0a6;">
+                                                    <td style="width:50%">
+                                                        <img src="../img/clr.png" class="control-label" height="35" style="float: left; margin-top: 1%; margin-left: 0vh;margin-bottom:1vh;" />
+                                                        <label class="control-label template-pattern-name" style="font-size:1em; margin-left:1vw;margin-top:1vh;margin-bottom:1vh;">
+                                                            `+ name + `
+                                                        </label>
+                                                    </td>
+                                                    <td>
+                                                        <label class="form-control" style="font-size:1em; margin-left:0vw;width:9+++++++++++++0%;margin-top:1vh;margin-bottom:1vh;"> ` + o.StartFrom + `</label>
+
+                                                    </td>
+                                                    <td>
+                                                        <label class="form-control" style="font-size:1em; margin-left:1vw;width:80%;margin-top:1vh;margin-bottom:1vh;"> ` + o.FinishBy + `</label>
+                                                    </td>
+                                                </tr>`;
+                        $('.template-details').append(dynamicRowHTML);
+                    }
+                }
+            });
+        }
+
+        function listLocations() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/Locations',
+                type: "GET",
+                success: function (data) {
+                    let x = JSON.parse(data);
+                    $.each(x, function (i, obj) {
+                        locations.push(obj);
+                    });
+                },
+
+                // Error handling
+                error: function (jqXHR, exception) {
+                    var msg = '';
+                    if (jqXHR.status === 0) {
+                        msg = 'Not connect.\n Verify Network.';
+                    } else if (jqXHR.status == 404) {
+                        msg = 'Requested page not found. [404]';
+                    } else if (jqXHR.status == 500) {
+                        msg = 'Internal Server Error [500].';
+                    } else if (exception === 'parsererror') {
+                        msg = 'Requested JSON parse failed.';
+                    } else if (exception === 'timeout') {
+                        msg = 'Time out error.';
+                    } else if (exception === 'abort') {
+                        msg = 'Ajax request aborted.';
+                    } else {
+                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    }
+                    alert(msg);
+                }
+            });
+        }
+        function listGovernrates() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/Governorates/list',
+                type: "GET",
+                success: function (data) {
+                    $('.gov-list')
+                        .find('option')
+                        .remove()
+                        .end();
+
+                    governorates = JSON.parse(data);
+                    $.each(governorates, function (i, obj) {
+                        $('.gov-list').append($('<option>', {
+                            value: obj.ID,
+                            text: obj.Name
+                        }));
+                    });
+                },
+                error: function (jqXHR, exception) {
+                }
+            });
+        }
+
+        function listAreas() {
+            $.ajax({
+                url: 'http://localhost/TrafficSignalLight/api/Areas/list',
+                type: "GET",
+                success: function (data) {
+                    $('.area-list')
+                        .find('option')
+                        .remove()
+                        .end();
+
+                    areas = JSON.parse(data);
+                    $.each(areas, function (i, obj) {
+                        $('.area-list').append($('<option>', {
+                            value: obj.ID,
+                            text: obj.Name
+                        }));
+                    });
+                },
+                error: function (jqXHR, exception) {
+                }
+            });
+        }
+    </script>
+</head>
+<body class="bg-signin">
+    <div class="top text-center" style="background-color: #9ed0a6; min-height: 10vh; padding-top: 0.8vh; ">
+        <img src="../img/traffic-light-30625.png" height="65" style="float: left; margin-left: 1vh;" />
+        <h2 class="" style="float: left; margin-top: 1.5vh;"> Traffic Sign Control </h2>
+
+        <div class="col-md-4 col-sm-4 col-xs-4 form-group top_search" style="display: normal; float: left; margin-top: 0.8%; margin-left: 12%;" dir="ltr">
+            <input id="search" style="border-left: 3px solid rgb(10,70,90);" type="text" class="form-control" placeholder=" Location, Name or IP-Address" dir="ltr">
+        </div>
+    </div>
+    <div class="nav-side "></div>
+    <div class="point-select">
+        <div class="x_panel">
+
+            <div class="x_content">
+                <div class="col-md-12">
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 2.5%;" for="govselect">
+                            Governorate <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width:60%;float:right;">
+                            <select class="gov-list select2_multiple form-control" name="govselect">
+                                <option value="1">القاهرة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
+                            Area <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
+                            <select class="area-list select2_multiple form-control" name="areaselect">
+                                <option value="1">القاهرة الجديدة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
+                            Name <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
+                            <input class="form-control sign-name" type="text" placeholder="descriptive name" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
+                            latitude <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
+                            <input class="form-control sign-lat" type="text" placeholder="latitude" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
+                            Longitude <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
+                            <input class="form-control sign-long" type="text" placeholder="longitude" />
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
+                            IP-Address <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
+                            <input class="form-control sign-ipaddress" type="text" placeholder="ip-address" />
+                        </div>
+                    </div>
+                    <h5 style="margin-top: 3vh; background-color: #9ed0a6; min-height: 3.5vh; text-align: center; ">Ligth Pattern</h5>
+                    <label class="custom-control-label" style="float: left;" for="isOverlaped">Select</label>
+
+                    <select style="margin-left:2vw;width:70%; float:left;text-align:center;" class="pattern-list select2_multiple form-control" name="patternselect">
+                        <option value="0">-New Pattern-</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <img class="sticky" src="../img/nile.png" alt="#" />
+    </div>
+    <div id="map" class="map-view">
+        <h5 style="margin-top: 3vh; background-color: #9ed0a6; min-height: 3.5vh; text-align: center; ">Point Configuration</h5>
+        <table border="0" style="width:100%;margin-top:5vh;color:#333;">
+            <thead>
+                <tr class="light-val">
+                    <td></td>
+                    <td>GREEN</td>
+                    <td><input class="temp-g" type="number" value="30" min="0" max="1000" step="1" /></td>
+                    <td>sec.</td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="counter-g" /></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><img src="../img/g.png" class="control-label cross-g" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
+                </tr>
+                <tr class="light-val">
+                    <td></td>
+                    <td>YELLOW</td>
+                    <td><input class="temp-a" type="number" value="10" min="0" max="1000" step="1" /></td>
+                    <td>sec.</td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="counter-a" /></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><img src="../img/a.png" class="control-label cross-y" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
+                </tr>
+                <tr class="light-val">
+                    <td></td>
+                    <td>RED</td>
+                    <td><input class="temp-r" type="number" value="30" min="0" max="1000" step="1" /></td>
+                    <td>sec.</td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="counter-r" /></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><img src="../img/r.png" class="control-label cross-r" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
+                </tr>
+                <tr class="light-val">
+                    <td colspan="11" style="text-align:left;">
+                    </td>
+                </tr>
+                <tr class="light-val">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><img src="../img/g.png" class="control-label main-g" height="65" style="float: left; margin-top: 2vh; margin-left: -8vh;" /></td>
+                    <td><img src="../img/a.png" class="control-label main-y" height="60" style="float: left; margin-top: 1.5vh; margin-left: -8vh;" /></td>
+                    <td><img src="../img/r.png" class="control-label main-r" height="66" style="float: left; margin-top: 0.5vh; margin-left: -6.8vh;" /></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="11" style="text-align:left;">
+                        <div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
+                            <input type="checkbox" class="custom-control-input" id="blinkGreen">
+                            <label class="custom-control-label" for="isOverlaped">Blink Green</label>
+                            <button style="min-width: 2.5rem; float:right;margin-left:1vw;" class="btn  btn-outline-success btn-Run" type="button"><strong>Run &#10097;</strong></button>
+
+                        </div>
+                        <div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
+                            <input type="checkbox" class="custom-control-input" id="blinkYellow">
+                            <label class="custom-control-label" for="isOverlaped">Blink Yellow</label>
+                        </div>
+                        <div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
+                            <input type="checkbox" class="custom-control-input" id="blinkRed">
+                            <label class="custom-control-label" for="isOverlaped">Blink Red</label>
+                        </div>
+                        <div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
+                            <input type="checkbox" class="custom-control-input" id="toggleMain">
+                            <label class="custom-control-label" for="isOverlaped">Toggle main-set</label>
+                        </div>
+                        <!--<div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
+                            <input type="checkbox" class="custom-control-input" id="applySame">
+                            <label class="custom-control-label" for="isOverlaped">Main as cross</label>
+                        </div>-->
+                    </td>
+                </tr>
+            </thead>
+            <thead class="template-details">
+            </thead>
+        </table>
+    </div>
+    <div class="point-settings">
+        <button style="min-width: 2.5rem; float:right;margin-left:1vw;" class="btn  btn-outline-success btn-Apply" type="button"><strong>Apply &#10097;</strong></button>
+        <button style="min-width: 2.5rem; float: right;" class="btn  btn-outline-success btn-Delete disabled" type="button"><strong>Delete &#10006;</strong></button>
+    </div>
+
+</body>
+</html>

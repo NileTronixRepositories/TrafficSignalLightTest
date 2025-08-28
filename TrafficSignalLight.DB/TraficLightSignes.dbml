@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="TraficLightSignes" Class="TraficLightSignesDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=.\SQLEXPRESS;Initial Catalog=TraficLightSignes;Persist Security Info=True;User ID=sa" SettingsObjectName="TrafficSignalLight.DB.Properties.Settings" SettingsPropertyName="TraficLightSignesConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Area" Member="Areas">
+    <Type Name="Area">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="GovernorateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Longitude" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
+      <Column Name="Latitude" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
+      <Association Name="Area_SigneControlBox" Member="SigneControlBoxes" ThisKey="ID" OtherKey="AreaID" Type="SigneControlBox" />
+      <Association Name="Governerate_Area" Member="Governerate" ThisKey="GovernorateID" OtherKey="ID" Type="Governerate" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.TemplatePattern" Member="TemplatePatterns">
+    <Type Name="TemplatePattern">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="TemplateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="PetternID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="StartFrom" Type="System.TimeSpan" DbType="Time NOT NULL" CanBeNull="false" />
+      <Column Name="FinishBy" Type="System.TimeSpan" DbType="Time NOT NULL" CanBeNull="false" />
+      <Association Name="LightPattern_TemplatePattern" Member="LightPattern" ThisKey="PetternID" OtherKey="ID" Type="LightPattern" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="Template_TemplatePattern" Member="Template" ThisKey="TemplateID" OtherKey="ID" Type="Template" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Governerate" Member="Governerates">
+    <Type Name="Governerate">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Longitude" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
+      <Column Name="Latitude" Type="System.String" DbType="NVarChar(15)" CanBeNull="true" />
+      <Association Name="Governerate_Area" Member="Areas" ThisKey="ID" OtherKey="GovernorateID" Type="Area" />
+    </Type>
+  </Table>
+  <Table Name="dbo.LightPattern" Member="LightPatterns">
+    <Type Name="LightPattern">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Column Name="Red" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Green" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Amber" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="GreenAmberOverlab" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="Pedstrain" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ShowSigneCounter" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="ShowPedstrainCounter" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="LightPattern_TemplatePattern" Member="TemplatePatterns" ThisKey="ID" OtherKey="PetternID" Type="TemplatePattern" />
+      <Association Name="LightPattern_SignTemplate" Member="SignTemplates" ThisKey="ID" OtherKey="TemplateID" Type="SignTemplate" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SigneControlBox" Member="SigneControlBoxes">
+    <Type Name="SigneControlBox">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="AreaID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="LightPatternID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="IPAddress" Type="System.String" DbType="NVarChar(15) NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Address" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Longitude" Type="System.String" DbType="NChar(50)" CanBeNull="true" />
+      <Column Name="Latitude" Type="System.String" DbType="NChar(50)" CanBeNull="true" />
+      <Association Name="SigneControlBox_SignTemplate" Member="SignTemplates" ThisKey="ID" OtherKey="SignID" Type="SignTemplate" />
+      <Association Name="Area_SigneControlBox" Member="Area" ThisKey="AreaID" OtherKey="ID" Type="Area" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SignTemplate" Member="SignTemplates">
+    <Type Name="SignTemplate">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="SignID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="TemplateID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="SigneControlBox_SignTemplate" Member="SigneControlBox" ThisKey="SignID" OtherKey="ID" Type="SigneControlBox" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="LightPattern_SignTemplate" Member="LightPattern" ThisKey="TemplateID" OtherKey="ID" Type="LightPattern" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Template" Member="Templates">
+    <Type Name="Template">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Association Name="Template_TemplatePattern" Member="TemplatePatterns" ThisKey="ID" OtherKey="TemplateID" Type="TemplatePattern" />
+    </Type>
+  </Table>
+</Database>

@@ -1,0 +1,69 @@
+﻿@model IEnumerable<TrafficSignalLight.DB.Template>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Red)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Green)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Amber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.GreenAmberOverlab)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Pedstrain)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShowSigneCounter)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShowPedstrainCounter)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Red)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Green)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Amber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.GreenAmberOverlab)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Pedstrain)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShowSigneCounter)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShowPedstrainCounter)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>

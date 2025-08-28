@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 17.75" name="TraficLightSignes">
+  <DataContextMoniker Name="/TraficLightSignesDataContext" />
+  <nestedChildShapes>
+    <classShape Id="137c80ec-87e3-4cf6-97b0-56bed7328a7b" absoluteBounds="1.5, 12.75, 2, 1.7708968098958344">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/Area" />
+      <nestedChildShapes>
+        <elementListCompartment Id="2fbdef0d-cf0c-4256-aeda-84efa8ceda85" absoluteBounds="1.5150000000000001, 13.21, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="db1fc970-5bfb-4a43-adef-474a58f7234b" absoluteBounds="3.5, 0.75, 2, 1.7708968098958331">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/TemplatePattern" />
+      <nestedChildShapes>
+        <elementListCompartment Id="9142ab2e-f3b6-44a1-b180-432b53377a9a" absoluteBounds="3.515, 1.21, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="4251588f-0434-404f-9c98-9e1e2797787a" absoluteBounds="1.75, 15.875, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/Governerate" />
+      <nestedChildShapes>
+        <elementListCompartment Id="f36e4798-c1e7-467f-b973-5062ce80fd0c" absoluteBounds="1.7650000000000001, 16.335, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="4a197b1e-24e0-4029-b598-54622a5b2a05" absoluteBounds="0.75, 3.375, 2, 2.5401025390625">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/LightPattern" />
+      <nestedChildShapes>
+        <elementListCompartment Id="3d2991d5-10d6-41b0-94bf-bee22cbe132f" absoluteBounds="0.765, 3.835, 1.9700000000000002, 1.9801025390625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="34386f20-87d1-4470-b8f0-ceee7e4cec11" absoluteBounds="0.75, 9.5, 2, 2.3478011067708344">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/SigneControlBox" />
+      <nestedChildShapes>
+        <elementListCompartment Id="40c54ac0-6e2e-486c-8aa0-e085731c55c3" absoluteBounds="0.765, 9.96, 1.9700000000000002, 1.7878011067708335" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="8acecbf9-8fb5-4331-8872-03267d00eb4e" absoluteBounds="3.5, 4, 2, 1.3862939453124996">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/SignTemplate" />
+      <nestedChildShapes>
+        <elementListCompartment Id="b945c32c-0035-415a-a9db-1635ae85b938" absoluteBounds="3.515, 4.46, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="f1d0986a-8b1c-482a-82e7-9d7094803a60" absoluteBounds="0.75, 6.875, 2, 1.1939925130208335">
+      <DataClassMoniker Name="/TraficLightSignesDataContext/Template" />
+      <nestedChildShapes>
+        <elementListCompartment Id="722cd85e-e6fc-499d-b64b-dfa24b33dbfd" absoluteBounds="0.765, 7.335, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(2.625 : 15.875); (2.625 : 14.5208968098958)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/Governerate/Governerate_Area" />
+      <nodes>
+        <classShapeMoniker Id="4251588f-0434-404f-9c98-9e1e2797787a" />
+        <classShapeMoniker Id="137c80ec-87e3-4cf6-97b0-56bed7328a7b" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(1.75 : 3.375); (1.75 : 1.63544840494792); (3.5 : 1.63544840494792)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/LightPattern/LightPattern_TemplatePattern" />
+      <nodes>
+        <classShapeMoniker Id="4a197b1e-24e0-4029-b598-54622a5b2a05" />
+        <classShapeMoniker Id="db1fc970-5bfb-4a43-adef-474a58f7234b" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.125 : 12.75); (2.125 : 11.8478011067708)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/Area/Area_SigneControlBox" />
+      <nodes>
+        <classShapeMoniker Id="137c80ec-87e3-4cf6-97b0-56bed7328a7b" />
+        <classShapeMoniker Id="34386f20-87d1-4470-b8f0-ceee7e4cec11" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 10.6739005533854); (4.5 : 10.6739005533854); (4.5 : 5.3862939453125)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/SigneControlBox/SigneControlBox_SignTemplate" />
+      <nodes>
+        <classShapeMoniker Id="34386f20-87d1-4470-b8f0-ceee7e4cec11" />
+        <classShapeMoniker Id="8acecbf9-8fb5-4331-8872-03267d00eb4e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 4.69314697265625); (3.04166666666667 : 4.69314697265625 : JumpStart); (3.20833333333333 : 4.69314697265625 : JumpEnd); (3.5 : 4.69314697265625)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/LightPattern/LightPattern_SignTemplate" />
+      <nodes>
+        <classShapeMoniker Id="4a197b1e-24e0-4029-b598-54622a5b2a05" />
+        <classShapeMoniker Id="8acecbf9-8fb5-4331-8872-03267d00eb4e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 6.87591745577925); (3.125 : 6.50091745577925); (3.125 : 2.10942460742187); (3.5 : 2.10942460742187)]" fixedFrom="NotFixed" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TraficLightSignesDataContext/Template/Template_TemplatePattern" />
+      <nodes>
+        <classShapeMoniker Id="f1d0986a-8b1c-482a-82e7-9d7094803a60" />
+        <classShapeMoniker Id="db1fc970-5bfb-4a43-adef-474a58f7234b" />
+      </nodes>
+    </associationConnector>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>
