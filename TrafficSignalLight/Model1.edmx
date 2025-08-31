@@ -1,0 +1,541 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="TraficLightSignesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Area">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="GovernorateID" Type="int" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="15" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="15" />
+        </EntityType>
+        <EntityType Name="Governerate">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="15" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="15" />
+        </EntityType>
+        <EntityType Name="LightPattern">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Red" Type="int" Nullable="false" />
+          <Property Name="Green" Type="int" Nullable="false" />
+          <Property Name="Amber" Type="int" Nullable="false" />
+          <Property Name="GreenAmberOverlab" Type="bit" Nullable="false" />
+          <Property Name="Pedstrain" Type="int" Nullable="false" />
+          <Property Name="ShowSigneCounter" Type="bit" Nullable="false" />
+          <Property Name="ShowPedstrainCounter" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SigneControlBox">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="AreaID" Type="int" Nullable="false" />
+          <Property Name="LightPatternID" Type="int" Nullable="false" />
+          <Property Name="IPAddress" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Address" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Longitude" Type="nchar" MaxLength="50" />
+          <Property Name="Latitude" Type="nchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="SignTemplate">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SignID" Type="int" Nullable="false" />
+          <Property Name="TemplateID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="Template">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TemplatePattern">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TemplateID" Type="int" Nullable="false" />
+          <Property Name="PetternID" Type="int" Nullable="false" />
+          <Property Name="StartFrom" Type="time" Precision="7" Nullable="false" />
+          <Property Name="FinishBy" Type="time" Precision="7" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Area_Govern">
+          <End Role="Governerate" Type="Self.Governerate" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Area" Type="Self.Area" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Governerate">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Area">
+              <PropertyRef Name="GovernorateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SigneControlBox_Area">
+          <End Role="Area" Type="Self.Area" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SigneControlBox" Type="Self.SigneControlBox" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Area">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SigneControlBox">
+              <PropertyRef Name="AreaID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignTemplate_Sign">
+          <End Role="SigneControlBox" Type="Self.SigneControlBox" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SignTemplate" Type="Self.SignTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SigneControlBox">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SignTemplate">
+              <PropertyRef Name="SignID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignTemplate_Template">
+          <End Role="LightPattern" Type="Self.LightPattern" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SignTemplate" Type="Self.SignTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="LightPattern">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SignTemplate">
+              <PropertyRef Name="TemplateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TemplatePattern_LightPattern">
+          <End Role="LightPattern" Type="Self.LightPattern" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TemplatePattern" Type="Self.TemplatePattern" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="LightPattern">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TemplatePattern">
+              <PropertyRef Name="PetternID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TemplatePattern_Template">
+          <End Role="Template" Type="Self.Template" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TemplatePattern" Type="Self.TemplatePattern" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Template">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TemplatePattern">
+              <PropertyRef Name="TemplateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="TraficLightSignesModelStoreContainer">
+          <EntitySet Name="Area" EntityType="Self.Area" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Governerate" EntityType="Self.Governerate" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="LightPattern" EntityType="Self.LightPattern" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SigneControlBox" EntityType="Self.SigneControlBox" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SignTemplate" EntityType="Self.SignTemplate" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Template" EntityType="Self.Template" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TemplatePattern" EntityType="Self.TemplatePattern" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Area_Govern" Association="Self.FK_Area_Govern">
+            <End Role="Governerate" EntitySet="Governerate" />
+            <End Role="Area" EntitySet="Area" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SigneControlBox_Area" Association="Self.FK_SigneControlBox_Area">
+            <End Role="Area" EntitySet="Area" />
+            <End Role="SigneControlBox" EntitySet="SigneControlBox" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignTemplate_Sign" Association="Self.FK_SignTemplate_Sign">
+            <End Role="SigneControlBox" EntitySet="SigneControlBox" />
+            <End Role="SignTemplate" EntitySet="SignTemplate" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignTemplate_Template" Association="Self.FK_SignTemplate_Template">
+            <End Role="LightPattern" EntitySet="LightPattern" />
+            <End Role="SignTemplate" EntitySet="SignTemplate" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TemplatePattern_LightPattern" Association="Self.FK_TemplatePattern_LightPattern">
+            <End Role="LightPattern" EntitySet="LightPattern" />
+            <End Role="TemplatePattern" EntitySet="TemplatePattern" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TemplatePattern_Template" Association="Self.FK_TemplatePattern_Template">
+            <End Role="Template" EntitySet="Template" />
+            <End Role="TemplatePattern" EntitySet="TemplatePattern" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="TraficLightSignesModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Area">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="GovernorateID" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Longitude" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Governerate" Relationship="Self.FK_Area_Govern" FromRole="Area" ToRole="Governerate" />
+          <NavigationProperty Name="SigneControlBoxes" Relationship="Self.FK_SigneControlBox_Area" FromRole="Area" ToRole="SigneControlBox" />
+        </EntityType>
+        <EntityType Name="Governerate">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Longitude" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="15" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Areas" Relationship="Self.FK_Area_Govern" FromRole="Governerate" ToRole="Area" />
+        </EntityType>
+        <EntityType Name="LightPattern">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Red" Type="Int32" Nullable="false" />
+          <Property Name="Green" Type="Int32" Nullable="false" />
+          <Property Name="Amber" Type="Int32" Nullable="false" />
+          <Property Name="GreenAmberOverlab" Type="Boolean" Nullable="false" />
+          <Property Name="Pedstrain" Type="Int32" Nullable="false" />
+          <Property Name="ShowSigneCounter" Type="Boolean" Nullable="false" />
+          <Property Name="ShowPedstrainCounter" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="SignTemplates" Relationship="Self.FK_SignTemplate_Template" FromRole="LightPattern" ToRole="SignTemplate" />
+          <NavigationProperty Name="TemplatePatterns" Relationship="Self.FK_TemplatePattern_LightPattern" FromRole="LightPattern" ToRole="TemplatePattern" />
+        </EntityType>
+        <EntityType Name="SigneControlBox">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AreaID" Type="Int32" Nullable="false" />
+          <Property Name="LightPatternID" Type="Int32" Nullable="false" />
+          <Property Name="IPAddress" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Address" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Longitude" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="Area" Relationship="Self.FK_SigneControlBox_Area" FromRole="SigneControlBox" ToRole="Area" />
+          <NavigationProperty Name="SignTemplates" Relationship="Self.FK_SignTemplate_Sign" FromRole="SigneControlBox" ToRole="SignTemplate" />
+        </EntityType>
+        <EntityType Name="SignTemplate">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SignID" Type="Int32" Nullable="false" />
+          <Property Name="TemplateID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="LightPattern" Relationship="Self.FK_SignTemplate_Template" FromRole="SignTemplate" ToRole="LightPattern" />
+          <NavigationProperty Name="SigneControlBox" Relationship="Self.FK_SignTemplate_Sign" FromRole="SignTemplate" ToRole="SigneControlBox" />
+        </EntityType>
+        <EntityType Name="sysdiagram">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="Template">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="TemplatePatterns" Relationship="Self.FK_TemplatePattern_Template" FromRole="Template" ToRole="TemplatePattern" />
+        </EntityType>
+        <EntityType Name="TemplatePattern">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="TemplateID" Type="Int32" Nullable="false" />
+          <Property Name="PetternID" Type="Int32" Nullable="false" />
+          <Property Name="StartFrom" Type="Time" Nullable="false" Precision="7" />
+          <Property Name="FinishBy" Type="Time" Nullable="false" Precision="7" />
+          <NavigationProperty Name="LightPattern" Relationship="Self.FK_TemplatePattern_LightPattern" FromRole="TemplatePattern" ToRole="LightPattern" />
+          <NavigationProperty Name="Template" Relationship="Self.FK_TemplatePattern_Template" FromRole="TemplatePattern" ToRole="Template" />
+        </EntityType>
+        <Association Name="FK_Area_Govern">
+          <End Role="Governerate" Type="Self.Governerate" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Area" Type="Self.Area" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Governerate">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Area">
+              <PropertyRef Name="GovernorateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SigneControlBox_Area">
+          <End Role="Area" Type="Self.Area" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SigneControlBox" Type="Self.SigneControlBox" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Area">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SigneControlBox">
+              <PropertyRef Name="AreaID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignTemplate_Template">
+          <End Role="LightPattern" Type="Self.LightPattern" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SignTemplate" Type="Self.SignTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="LightPattern">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SignTemplate">
+              <PropertyRef Name="TemplateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TemplatePattern_LightPattern">
+          <End Role="LightPattern" Type="Self.LightPattern" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TemplatePattern" Type="Self.TemplatePattern" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="LightPattern">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TemplatePattern">
+              <PropertyRef Name="PetternID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignTemplate_Sign">
+          <End Role="SigneControlBox" Type="Self.SigneControlBox" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="SignTemplate" Type="Self.SignTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SigneControlBox">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SignTemplate">
+              <PropertyRef Name="SignID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TemplatePattern_Template">
+          <End Role="Template" Type="Self.Template" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TemplatePattern" Type="Self.TemplatePattern" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Template">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TemplatePattern">
+              <PropertyRef Name="TemplateID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="TraficLightSignesEntities2" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Areas" EntityType="Self.Area" />
+          <EntitySet Name="Governerates" EntityType="Self.Governerate" />
+          <EntitySet Name="LightPatterns" EntityType="Self.LightPattern" />
+          <EntitySet Name="SigneControlBoxes" EntityType="Self.SigneControlBox" />
+          <EntitySet Name="SignTemplates" EntityType="Self.SignTemplate" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+          <EntitySet Name="Templates" EntityType="Self.Template" />
+          <EntitySet Name="TemplatePatterns" EntityType="Self.TemplatePattern" />
+          <AssociationSet Name="FK_Area_Govern" Association="Self.FK_Area_Govern">
+            <End Role="Governerate" EntitySet="Governerates" />
+            <End Role="Area" EntitySet="Areas" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SigneControlBox_Area" Association="Self.FK_SigneControlBox_Area">
+            <End Role="Area" EntitySet="Areas" />
+            <End Role="SigneControlBox" EntitySet="SigneControlBoxes" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignTemplate_Template" Association="Self.FK_SignTemplate_Template">
+            <End Role="LightPattern" EntitySet="LightPatterns" />
+            <End Role="SignTemplate" EntitySet="SignTemplates" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TemplatePattern_LightPattern" Association="Self.FK_TemplatePattern_LightPattern">
+            <End Role="LightPattern" EntitySet="LightPatterns" />
+            <End Role="TemplatePattern" EntitySet="TemplatePatterns" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignTemplate_Sign" Association="Self.FK_SignTemplate_Sign">
+            <End Role="SigneControlBox" EntitySet="SigneControlBoxes" />
+            <End Role="SignTemplate" EntitySet="SignTemplates" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TemplatePattern_Template" Association="Self.FK_TemplatePattern_Template">
+            <End Role="Template" EntitySet="Templates" />
+            <End Role="TemplatePattern" EntitySet="TemplatePatterns" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="TraficLightSignesModelStoreContainer" CdmEntityContainer="TraficLightSignesEntities2">
+          <EntitySetMapping Name="Areas">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.Area">
+              <MappingFragment StoreEntitySet="Area">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="GovernorateID" ColumnName="GovernorateID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Governerates">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.Governerate">
+              <MappingFragment StoreEntitySet="Governerate">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="LightPatterns">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.LightPattern">
+              <MappingFragment StoreEntitySet="LightPattern">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Red" ColumnName="Red" />
+                <ScalarProperty Name="Green" ColumnName="Green" />
+                <ScalarProperty Name="Amber" ColumnName="Amber" />
+                <ScalarProperty Name="GreenAmberOverlab" ColumnName="GreenAmberOverlab" />
+                <ScalarProperty Name="Pedstrain" ColumnName="Pedstrain" />
+                <ScalarProperty Name="ShowSigneCounter" ColumnName="ShowSigneCounter" />
+                <ScalarProperty Name="ShowPedstrainCounter" ColumnName="ShowPedstrainCounter" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SigneControlBoxes">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.SigneControlBox">
+              <MappingFragment StoreEntitySet="SigneControlBox">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="AreaID" ColumnName="AreaID" />
+                <ScalarProperty Name="LightPatternID" ColumnName="LightPatternID" />
+                <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SignTemplates">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.SignTemplate">
+              <MappingFragment StoreEntitySet="SignTemplate">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="SignID" ColumnName="SignID" />
+                <ScalarProperty Name="TemplateID" ColumnName="TemplateID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.sysdiagram">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Templates">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.Template">
+              <MappingFragment StoreEntitySet="Template">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TemplatePatterns">
+            <EntityTypeMapping TypeName="TraficLightSignesModel.TemplatePattern">
+              <MappingFragment StoreEntitySet="TemplatePattern">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="TemplateID" ColumnName="TemplateID" />
+                <ScalarProperty Name="PetternID" ColumnName="PetternID" />
+                <ScalarProperty Name="StartFrom" ColumnName="StartFrom" />
+                <ScalarProperty Name="FinishBy" ColumnName="FinishBy" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

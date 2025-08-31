@@ -8,13 +8,14 @@ namespace TrafficSignalLight.Dto
         [JsonProperty("L1")]
         public string L1 { get; set; }
 
+        [JsonProperty("id")]
+        public string id { get; set; }
+
         [JsonProperty("T")]
         public int T { get; set; }
 
         [JsonProperty("L2")]
         public string L2 { get; set; }
-
-        public string IpAdress { get; set; } = string.Empty;
 
         //[JsonPropertyName("timestamp")]
         //public DateTime Timestamp { get; set; }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="7314e77e0a8b4e029dad724ed7aa6c27" Name="Diagram1">
+        <EntityTypeShape EntityType="TraficLightSignesModel.Area" Width="1.5" PointX="1.5" PointY="14.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.Governerate" Width="1.5" PointX="1.5" PointY="18" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.LightPattern" Width="1.5" PointX="0.75" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.SigneControlBox" Width="1.5" PointX="0.75" PointY="10.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.SignTemplate" Width="1.5" PointX="3" PointY="4" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.sysdiagram" Width="1.5" PointX="5.75" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.Template" Width="1.5" PointX="0.75" PointY="7.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="TraficLightSignesModel.TemplatePattern" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_Area_Govern" ManuallyRouted="false" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_SigneControlBox_Area" ManuallyRouted="false" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_SignTemplate_Template" ManuallyRouted="false" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_TemplatePattern_LightPattern" ManuallyRouted="false" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_SignTemplate_Sign" ManuallyRouted="false" />
+        <AssociationConnector Association="TraficLightSignesModel.FK_TemplatePattern_Template" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

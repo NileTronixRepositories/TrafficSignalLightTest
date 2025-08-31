@@ -1,4 +1,6 @@
-﻿using System.Web.Http;
+﻿using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Web.Http;
 using System.Web.Http.Cors;
 
 namespace TrafficSignalLight
@@ -11,13 +13,19 @@ namespace TrafficSignalLight
 
             // Web API routes
             var cors = new EnableCorsAttribute(
-                   "http://127.0.0.1:5500,http://localhost:5500",
+                   "*",
                    "*",
                    "*")
             {
                 SupportsCredentials = true
             };
             config.EnableCors(cors);
+            config.Formatters.JsonFormatter.SupportedMediaTypes
+      .Add(new MediaTypeHeaderValue("text/html"));
+            config.Formatters.Remove(config.Formatters.XmlFormatter);
+
+            // (اختياري) منع loop
+            config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 
             config.MapHttpAttributeRoutes();
 
