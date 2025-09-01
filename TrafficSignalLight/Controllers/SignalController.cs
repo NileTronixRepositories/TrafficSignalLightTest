@@ -3,7 +3,6 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -32,22 +31,22 @@ namespace TrafficSignalLight.Controllers
         [Route("api/get/control-box")]
         public async Task<IHttpActionResult> Test()
         {
-            using (HttpClient client = new HttpClient())
-            {
-                var requestgURL = "http://197.168.208.50/7B0100000A0005000D00000000000000007D";
-                var requestErrorURL = "http://197.168.208.50/7B010007D";
-                try
-                {
-                    HttpResponseMessage response = await client.GetAsync(requestgURL);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string respContent = await response.Content.ReadAsStringAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                }
-            }
+            //using (HttpClient client = new HttpClient())
+            //{
+            //    var requestgURL = "http://197.168.208.50/7B0100000A0005000D00000000000000007D";
+            //    var requestErrorURL = "http://197.168.208.50/7B010007D";
+            //    try
+            //    {
+            //        HttpResponseMessage response = await client.GetAsync(requestgURL);
+            //        if (response.IsSuccessStatusCode)
+            //        {
+            //            string respContent = await response.Content.ReadAsStringAsync();
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //    }
+            //}
 
             using (var db = new TraficLightSignesEntities2())
             {
