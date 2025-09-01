@@ -19,27 +19,6 @@ namespace TrafficSignalLight.Dto
 
         [JsonProperty("L2")]
         public string L2 { get; set; }
-
-        //[JsonPropertyName("timestamp")]
-        //public DateTime Timestamp { get; set; }
-
-        //[JsonPropertyName("status")]
-        //public string Status { get; set; }
-
-        //[JsonPropertyName("method")]
-        //public string Method { get; set; }
-
-        //[JsonPropertyName("client_ip")]
-        //public string ClientIp { get; set; }
-
-        //[JsonPropertyName("content_type")]
-        //public string ContentType { get; set; }
-
-        //[JsonPropertyName("raw")]
-        //public string Raw { get; set; }
-
-        //[JsonPropertyName("parsed")]
-        //public ParsedData Parsed { get; set; }
     }
 
     public class ParsedData
