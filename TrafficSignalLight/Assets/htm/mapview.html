@@ -1,27 +1,30 @@
 ﻿<!doctype html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
 <html>
 <head>
-    <title>Map View</title>
+    <meta charset="utf-8" />
+    <title>Traffic Sign Control (Leaflet)</title>
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+
+    <!-- Polyfill + jQuery + jQuery UI -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script src="../js/jquery-2.2.4.min.js"></script>
-    <!-- Latest compiled and minified CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Latest compiled JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet" />
 
-    <link href="../css/fontawesome-all.min.css" />
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fontawesome (اختياري) -->
+    <link href="../css/fontawesome-all.min.css" rel="stylesheet" />
+
+    <!-- Input spinner + html2canvas -->
     <script src="../js/bootstrap-input-spinner.js"></script>
-    <!--<script src="../js/html2canvas.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
-    <!-- jsFiddle will insert css and js -->
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <style>
         html, body {
             height: 100%;
@@ -36,20 +39,18 @@
             background-position-y: left;
         }
 
-
         .map-view {
             height: 76vh;
             width: 64vw;
             margin-left: 9.5vh;
             margin-top: 0.1vh;
             float: left;
-            border-radius: 5px 0px 0px 150px;
+            border-radius: 5px 0 0 150px;
         }
 
         .point-select {
             height: 80vh;
             width: 25vw;
-            background-color: transparent;
             float: left;
             padding-top: 2vh;
         }
@@ -57,7 +58,6 @@
         .nav-side {
             height: 80vh;
             width: 5vw;
-            background-color: transparent;
             float: left;
         }
 
@@ -73,152 +73,194 @@
         }
 
         img.sticky {
-            position: -webkit-sticky;
             position: fixed;
             bottom: 10px;
             left: 10px;
             width: 100px;
         }
+        /* Leaflet container needs explicit size */
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .leaflet-container {
+            border-radius: 5px 0 0 150px;
+        }
     </style>
+</head>
+<body class="bg-signin">
+    <div class="top text-center" style="background-color:#9ed0a6; min-height:10vh; padding-top:0.8vh;">
+        <img src="../img/traffic-light-30625.png" height="65" style="float:left; margin-left:1vh;" />
+        <h2 style="float:left; margin-top:1.5vh;"> Traffic Sign Control </h2>
+        <div class="col-md-4 col-sm-4 col-xs-4 form-group top_search" style="float:left; margin-top:0.8%; margin-left:12%;" dir="ltr">
+            <input id="search" style="border-left:3px solid rgb(10,70,90);" type="text" class="form-control" placeholder=" Location, Name or IP-Address" dir="ltr">
+        </div>
+    </div>
+
+    <div class="nav-side"></div>
+
+    <div class="point-select">
+        <div class="x_panel">
+            <div class="x_content">
+                <div class="col-md-12">
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:2.5%;" for="govselect">
+                            Governorate <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width:60%; float:right;">
+                            <select class="gov-list select2_multiple form-control" name="govselect">
+                                <option value="1">القاهرة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:7%;" for="areaselect">
+                            Area <span class="required">*</span>
+                        </label>
+                        <div class="col-md-8" style="width:60%; float:right; margin-top:-8%;">
+                            <select class="area-list select2_multiple form-control" name="areaselect">
+                                <option value="1">القاهرة الجديدة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:7%;">Name <span class="required">*</span></label>
+                        <div class="col-md-8" style="width:60%; float:right; margin-top:-8%;">
+                            <input class="form-control sign-name" type="text" placeholder="descriptive name" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:7%;">Latitude <span class="required">*</span></label>
+                        <div class="col-md-8" style="width:60%; float:right; margin-top:-8%;">
+                            <input class="form-control sign-lat" type="text" placeholder="latitude" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:7%;">Longitude <span class="required">*</span></label>
+                        <div class="col-md-8" style="width:60%; float:right; margin-top:-8%;">
+                            <input class="form-control sign-long" type="text" placeholder="longitude" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width:100%">
+                        <label class="control-label col-md-4" style="width:40%; margin-top:7%;">IP-Address <span class="required">*</span></label>
+                        <div class="col-md-8" style="width:60%; float:right; margin-top:-8%;">
+                            <input class="form-control sign-ipaddress" type="text" placeholder="ip-address" />
+                        </div>
+                    </div>
+
+                    <h5 style="margin-top:3vh; background-color:#9ed0a6; min-height:3.5vh; text-align:center;">Light Pattern</h5>
+                    <table border="0" style="width:100%; margin-top:1vh; color:#333;">
+                        <tr>
+                            <td colspan="3">
+                                <div class="custom-control" style="margin-left:0.8vw; width:100%; float:left;">
+                                    <label class="custom-control-label" style="float:left; margin-top:1vh;">Select Template?</label>
+                                    <select style="margin-left:3vw; width:50%; float:left; text-align:center;" class="temp-list select2_multiple form-control" name="tempselect">
+                                        <option value="0">- N/A -</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <thead>
+                            <tr class="light-val">
+                                <td><img src="../img/g.png" height="65" style="float:left; margin-top:3%; margin-left:1vh;" /></td>
+                                <td><input class="temp-g" type="number" value="30" min="0" max="1000" step="1" /></td>
+                                <td>sec.</td>
+                            </tr>
+                            <tr class="light-val">
+                                <td><img src="../img/a.png" height="65" style="float:left; margin-top:3%; margin-left:1vh;" /></td>
+                                <td><input class="temp-a" type="number" value="10" min="0" max="1000" step="1" /></td>
+                                <td>sec.</td>
+                            </tr>
+                            <tr class="light-val">
+                                <td><img src="../img/r.png" height="65" style="float:left; margin-top:3%; margin-left:1vh;" /></td>
+                                <td><input class="temp-r" type="number" value="30" min="0" max="1000" step="1" /></td>
+                                <td>sec.</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align:left;"></td>
+                            </tr>
+                        </thead>
+                        <thead class="template-details"></thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <img class="sticky" src="../img/nile.png" alt="#" />
+    </div>
+
+    <div class="map-view">
+        <div id="map"></div>
+    </div>
+
+    <div class="point-settings">
+        <button style="min-width:2.5rem; float:right; margin-left:1vw;" class="btn btn-outline-success btn-Apply" type="button"><strong>Apply &#10097;</strong></button>
+        <button style="min-width:2.5rem; float:right;" class="btn btn-outline-success btn-Delete disabled" type="button"><strong>Delete &#10006;</strong></button>
+    </div>
+
     <script>
-        var governorates = [];
-        var areas = [];
-        var locations = [];
-        var templates = [];
-        var lightpatterns = [];
-        var templatepatterns = [];
+        // --- State ---
+        var governorates = [], areas = [], locations = [], templates = [], lightpatterns = [], templatepatterns = [];
         var markers = [];
-        var new_govid = -1000;
-        var new_areaid = -2000;
-        var map = null;
-        var geocoder = null;
-        var infowindow = null;
-        const image = 'http://localhost/TrafficSignalLight/Assets/img/traffic-light-305721.png';
-        var currentPosition = '';
-        var currentSignID = 0;
-        var currentLigthPatternID = 0;
-        var currentTempID = 0;
-        function autoComplete() {
-            $('#search').autocomplete({
-                minLength: 2,
-                source: function (request, response) {
-                    response($.map(locations, function (obj, key) {
+        var new_govid = -1000, new_areaid = -2000;
+        var currentLigthPatternID = 0, currentSignID = 0, currentTempID = 0;
 
-                        var name = obj.Name.toUpperCase();
-                        var ip = obj.IPAddress.toUpperCase();
+        // Leaflet Map
+        var map, leafletMarkersLayer = L.layerGroup();
 
-                        if (name.indexOf(request.term.toUpperCase()) != -1) {
-                            return {
-                                label: obj.Name.replace(/   /g, " ") + " [ " + obj.IPAddress + " ]", // Label for Display
-                                value: obj.ID // Value
-                            }
-                        } else if (ip.indexOf(request.term.toUpperCase()) != -1) {
-                            return {
-                                label: obj.Name.replace(/   /g, " ") + " [ " + obj.IPAddress + " ]", // Label for Display
-                                value: obj.ID // Value
-                            }
-                        } else {
-                            return null;
-                        }
-                    }));
-                },
-                focus: function (event, ui) {
-                    event.preventDefault();
-                },
-                // Once a value in the drop down list is selected, do the following:
-                select: function (event, ui) {
-                    event.preventDefault();
-                    // place the person.given_name value into the textfield called 'select_origin'...
-                    $('#search').val(ui.item.label);
-                    var _id = ui.item.value;
-                    var obj = null;
-                    $.each(locations, function (i, l) {
-                        if (l.ID == _id) {
-                            obj = l;
-                        }
-                    });
-                    if (obj != null) {
-                        clearfields();
+        // Custom icon (traffic light)
+        var trafficIcon = L.icon({
+            iconUrl: 'http://localhost/TrafficSignalLight/Assets/img/traffic-light-305721.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -28]
+        });
 
-                        if (obj.LightPatternID > 0) {
-                            $('.btn-increment').removeClass('disabled');
-                            $('.btn-decrement').removeClass('disabled');
-                            $('.temp-r').removeClass('disabled');
-                            $('.temp-a').removeClass('disabled');
-                            $('.temp-g').removeClass('disabled');
-                            $('.temp-r').val(obj.Red);
-                            $('.temp-a').val(obj.Amber);
-                            $('.temp-g').val(obj.Green);
-                        }
-                        else {
-                            $.each(templates, function (i, t) {
-                                if (t.ID == obj.TemplateID) {
-                                    currentTempID = obj.ID;
-                                    $('.btn-increment').addClass('disabled');
-                                    $('.btn-decrement').addClass('disabled');
-                                    $('.temp-r').addClass('disabled');
-                                    $('.temp-a').addClass('disabled');
-                                    $('.temp-g').addClass('disabled');
-                                }
-                            });
-                        }
+        function initMap() {
+            $("input[type='number']").inputSpinner();
 
-                        $('tem-list').val(currentTempID);
+            map = L.map('map', {
+                center: [30.0332459, 31.1679859],
+                zoom: 12
+            });
 
-                        $('.gov-list').val(obj.GovernerateID);
-                        $('.area-list').val(obj.AreaID);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
-                        $('.sign-name').val(obj.Name);
-                        $('.sign-long').val(obj.Longitude);
-                        $('.sign-lat').val(obj.Latitude);
-                        $('.sign-ipaddress').val(obj.IPAddress);
-                        $('.temp-list').val(obj.TemplateID);
-                        currentSignID = obj.ID;
-                        //map.setZoom(18);
-                        map.setCenter(latlng);
-                    }
-                }
+            leafletMarkersLayer.addTo(map);
+
+            // Map click → add temp marker + fill form (placeholder instead of reverse geocoding)
+            map.on('click', function (e) {
+                var lat = e.latlng.lat.toFixed(6);
+                var lng = e.latlng.lng.toFixed(6);
+                L.marker([lat, lng], { icon: trafficIcon }).addTo(map).bindPopup('New Traffic Sign [0.0.0.0]').openPopup();
+                clearfields();
+                $('.sign-name').val('Traffic Sign ' + lat + ', ' + lng);
+                $('.sign-lat').val(lat);
+                $('.sign-long').val(lng);
+                $('.sign-ipaddress').val('0.0.0.0');
             });
         }
-        $(document).ready(function () {
-            loadserverdata();
-            $('.btn-Apply').click(function () {
-                var obj = new Object();
-                obj.Name = $('.sign-name').val();
-                obj.Longitude = $('.sign-long').val();
-                obj.Latitude = $('.sign-lat').val();
-                obj.IPAddress = $('.sign-ipaddress').val();
-                obj.AreaID = $('.area-list').val();
-                obj.R = $('.temp-r').val();
-                obj.A = $('.temp-a').val();
-                obj.G = $('.temp-g').val();
 
-                updateLocation(obj);
-                //loadserverdata();
-            });
+        function clearPattern() { $('.temp-r').val(0); $('.temp-a').val(0); $('.temp-g').val(0); }
+        function clearfields() {
+            clearPattern(); $('.temp-list').val(0);
+            $('.sign-name').val(''); $('.sign-long').val(''); $('.sign-lat').val(''); $('.sign-ipaddress').val('');
+            currentLigthPatternID = 0; currentSignID = 0; currentTempID = 0;
+        }
 
-        });
         function loadserverdata() {
-            governorates = [];
-            areas = [];
-            locations = [];
-            templates = [];
-            lightpatterns = [];
-            $('.gov-list')
-                .find('option')
-                .remove()
-                .end();
-            $('.area-list')
-                .find('option')
-                .remove()
-                .end();
-            $('.temp-list')
-                .find('option')
-                .remove()
-                .end();
-
+            governorates = []; areas = []; locations = []; templates = []; lightpatterns = []; templatepatterns = [];
+            $('.gov-list').empty(); $('.area-list').empty(); $('.temp-list').empty().append('<option value="0">- N/A -</option>');
             clearfields();
             initMap();
+
             setTimeout(listGovernrates, 500);
             setTimeout(listAreas, 800);
             setTimeout(listLocations, 1000);
@@ -227,438 +269,248 @@
             setTimeout(listTemplatePatterns, 1400);
             setTimeout(autoComplete, 1500);
         }
+
         function updateLocation(obj) {
             $.ajax({
-                url: "http://127.0.0.1/TrafficSignalLight/api/Locations/Set",
+                url: "http://localhost/TLC/api/Locations/Set",
+                type: "GET",
+                dataType: "json",
                 data: {
                     "ID": currentSignID,
-                    "GovernerateName": $('.gov-list  option:selected').text(),
-                    "AreaName": $('.area-list  option:selected').text(),
+                    "GovernerateName": $('.gov-list option:selected').text(),
+                    "AreaName": $('.area-list option:selected').text(),
                     "AreaID": obj.AreaID,
                     "Name": obj.Name,
                     "Longitude": obj.Longitude,
                     "Latitude": obj.Latitude,
                     "IPAddress": obj.IPAddress,
-                    "TempelateID": currentTempID,
-                    "LightPatternID": currentLigthPatternID, "R": obj.R, "A": obj.A, "G": obj.G
+                    "TemplateID": currentTempID,
+                    "LightPatternID": currentLigthPatternID,
+                    "R": obj.R, "A": obj.A, "G": obj.G
                 },
                 success: function (response) {
-                    if (response == 'Ok')
-                        loadserverdata();
-                    else
-                        alert(response);
+                    if (response === 'Ok' || response === true) loadserverdata();
+                    else alert(response);
                 },
-                error: function (xhr) {
-                }
+                error: function () { alert('Failed to update location'); }
             });
         }
-        function clearPattern() {
 
-            $('.temp-r').val(0);
-            $('.temp-a').val(0);
-            $('.temp-g').val(0);
-        }
-        function clearfields() {
-            clearPattern();
-            $('.temp-list').val(0);
-            $('.sign-name').val('');
-            $('.sign-long').val('');
-            $('.sign-lat').val('');
-            $('.sign-ipaddress').val('');
-            currentLigthPatternID = 0;
-            currentSignID = 0;
-            currentTempID = 0;
-        }
         function getSignLightPattern(id) {
-            $.each(lightpatterns, function (i, obj) {
-                if (obj.ID == id) {
-                    currentLigthPatternID = obj.ID;
-                }
-            });
+            $.each(lightpatterns, function (i, obj) { if (obj.ID == id) currentLigthPatternID = obj.ID; });
         }
+
         function listPatterns() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Pattern/list',
-                type: "GET",
-                success: function (data) {
-                    lightpatterns = JSON.parse(data);
-                },
-                error: function (jqXHR, exception) {
-                }
+                url: 'http://localhost/TLC/api/Pattern/list',
+                type: "GET", dataType: "json",
+                success: function (data) { lightpatterns = data; },
+                error: function () { }
             });
         }
+
         function listTemplatePatterns() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/TemplatePattern/list',
-                type: "GET",
-                success: function (data) {
-                    templatepatterns = JSON.parse(data);
-                },
-                error: function (jqXHR, exception) {
-                }
+                url: 'http://localhost/TLC/api/TemplatePattern/list',
+                type: "GET", dataType: "json",
+                success: function (data) { templatepatterns = data; },
+                error: function () { }
             });
         }
+
         function listTemplates() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Template/list',
-                type: "GET",
+                url: 'http://localhost/TLC/api/Template/list',
+                type: "GET", dataType: "json",
                 success: function (data) {
-                    templates = JSON.parse(data);
-                    var tempItem = new Object();
-                    tempItem.ID = 0;
-                    tempItem.Name = '- N/A -';
-                    templates.push(tempItem);
-
+                    templates = data || [];
+                    // Append "- N/A -" already added; add templates:
                     $.each(templates, function (i, obj) {
-                        $('.temp-list').append($('<option>', {
-                            value: obj.ID,
-                            text: obj.Name
-                        }));
+                        $('.temp-list').append($('<option>', { value: obj.ID, text: obj.Name }));
                     });
-
                     $('.temp-list').val(0);
 
                     $('.temp-list').on('change', function () {
-                        var id = $(this).val();
-                        $.each(templates, function (i, obj) {
-                            if (obj.ID == id) {
-                                currentTempID = obj.ID;
-                            }
-                        });
-
-                        if (currentTempID > 0) {
-                            clearPattern();
-                            createTemplateTable(true);
-                        }
-                        else
-                            createTemplateTable(false);
+                        var id = parseInt($(this).val(), 10) || 0;
+                        currentTempID = id;
+                        if (currentTempID > 0) { clearPattern(); createTemplateTable(true); }
+                        else { createTemplateTable(false); }
                     });
                 },
-                // Error handling
                 error: function (jqXHR, exception) {
-                    var msg = '';
-                    if (jqXHR.status === 0) {
-                        msg = 'Not connect.\n Verify Network.';
-                    } else if (jqXHR.status == 404) {
-                        msg = 'Requested page not found. [404]';
-                    } else if (jqXHR.status == 500) {
-                        msg = 'Internal Server Error [500].';
-                    } else if (exception === 'parsererror') {
-                        msg = 'Requested JSON parse failed.';
-                    } else if (exception === 'timeout') {
-                        msg = 'Time out error.';
-                    } else if (exception === 'abort') {
-                        msg = 'Ajax request aborted.';
-                    } else {
-                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                    }
-                    alert(msg);
+                    alert('Templates load error');
                 }
             });
         }
 
         function createTemplateTable(showtemplatedetails) {
             $('.template-details').html('');
-            if (showtemplatedetails) {
-                $('.light-val').css('display', 'none');
-                $('.template-details').css('display', '');
-            }
-            else {
-                $('.template-details').css('display', 'none');
-                $('.light-val').css('display', '');
-            }
+            if (showtemplatedetails) { $('.light-val').hide(); $('.template-details').show(); }
+            else { $('.template-details').hide(); $('.light-val').show(); }
 
-            var name = '';
-            var o = null;
+            if (!showtemplatedetails) return;
+
+            var name = '', o = null;
             $.each(templatepatterns, function (i, obj) {
                 if (obj.TemplateID == currentTempID) {
                     o = obj;
-                    $.each(lightpatterns, function (i, pobj) {
-                        if (pobj.ID == obj.PetternID) {
-                            name = pobj.Name;
-                        }
+                    $.each(lightpatterns, function (ii, pobj) {
+                        if (pobj.ID == obj.PetternID) name = pobj.Name;
                     });
-
-
-                    if (o != null) {
-                        let dynamicRowHTML = `
-                                                    <tr class="schedule-row" style="text-align:left;border-bottom: 2px solid #9ed0a6;">
-                                                        <td style="width:50%">
-                                                            <img src="../img/clr.png" class="control-label" height="35" style="float: left; margin-top: 1%; margin-left: 0vh;margin-bottom:1vh;" />
-                                                            <label class="control-label template-pattern-name" style="font-size:1em; margin-left:1vw;margin-top:1vh;margin-bottom:1vh;">
-
-                                                                `+ name + `
-
-                                                            </label>
-                                                        </td>
-                                                        <td>
-                                                            <label class="form-control" style="font-size:1em; margin-left:0vw;width:9+++++++++++++0%;margin-top:1vh;margin-bottom:1vh;"> ` + o.StartFrom + `</label>
-
-                                                        </td>
-                                                        <td>
-                                                            <label class="form-control" style="font-size:1em; margin-left:1vw;width:80%;margin-top:1vh;margin-bottom:1vh;"> ` + o.FinishBy + `</label>
-                                                        </td>
-                                                    </tr>`;
-                        $('.template-details').append(dynamicRowHTML);
+                    if (o) {
+                        var row = '\
+                                            <tr class="schedule-row" style="text-align:left; border-bottom:2px solid #9ed0a6;">\
+                                                <td style="width:50%">\
+                                                    <img src="../img/clr.png" height="35" style="float:left; margin-top:1%; margin-left:0; margin-bottom:1vh;" />\
+                                                    <label class="control-label template-pattern-name" style="font-size:1em; margin-left:1vw; margin-top:1vh; margin-bottom:1vh;">'+ name + '</label>\
+                                                </td>\
+                                                <td><label class="form-control" style="font-size:1em; width:90%; margin-top:1vh; margin-bottom:1vh;">'+ o.StartFrom + '</label></td>\
+                                                <td><label class="form-control" style="font-size:1em; width:80%; margin-top:1vh; margin-bottom:1vh;">'+ o.FinishBy + '</label></td>\
+                                            </tr>';
+                        $('.template-details').append(row);
                     }
                 }
             });
+        }
+
+        function addLocationMarker(obj) {
+            var lat = parseFloat(obj.Latitude), lng = parseFloat(obj.Longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            var m = L.marker([lat, lng], { icon: trafficIcon })
+                .addTo(leafletMarkersLayer)
+                .bindPopup('<b>' + (obj.Name || '').trim() + '</b><br />' + (obj.Address || '') + '<br /><a href="' + (obj.IPAddress || '#') + '" target="_blank">' + (obj.IPAddress || '') + '</a>');
+
+            // Hover (approximate via mouseover open popup)
+            m.on('mouseover', function () { m.openPopup(); });
+
+            // Click → fill form + center + screenshot
+            m.on('click', function () {
+                clearfields();
+                if (obj.LightPatternID > 0) {
+                    $('.temp-r').val(obj.Red);
+                    $('.temp-a').val(obj.Amber);
+                    $('.temp-g').val(obj.Green);
+                    currentLigthPatternID = obj.LightPatternID;
+                } else {
+                    $.each(templates, function (i, t) { if (t.ID == obj.TemplateID) currentTempID = obj.ID; });
+                }
+
+                $('.gov-list').val(obj.GovernerateID);
+                $('.area-list').val(obj.AreaID);
+                $('.sign-name').val(obj.Name);
+                $('.sign-long').val(obj.Longitude);
+                $('.sign-lat').val(obj.Latitude);
+                $('.sign-ipaddress').val(obj.IPAddress);
+                $('.temp-list').val(obj.TemplateID);
+                currentSignID = obj.ID;
+
+                map.setView([lat, lng], 18);
+
+                setTimeout(function () {
+                    getScreenshotOfElement($("div#map").get(0), 0, 0, $(document).width(), $(document).height(), function (data) {
+                        downloadBase64File('image/png', data, 'image');
+                    });
+                }, 600);
+            });
+
+            markers.push(m);
         }
 
         function listLocations() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Locations',
-                type: "GET",
+                url: 'http://localhost/TLC/api/Locations',
+                type: "GET", dataType: "json",
                 success: function (data) {
-                    let x = JSON.parse(data);
-
+                    var x = data || [];
+                    leafletMarkersLayer.clearLayers();
+                    markers = [];
                     $.each(x, function (i, obj) {
                         locations.push(obj);
-                        const latlng = {
-                            lat: parseFloat(obj.Latitude),
-                            lng: parseFloat(obj.Longitude),
-                        };
-                        const infowindow = new google.maps.InfoWindow();
-                        const marker = new google.maps.Marker({
-                            id: obj.ID,
-                            position: latlng,
-                            address: obj.Address,
-                            name: obj.Name,
-                            map: map,
-                            icon: image,
-                            ipaddress: obj.IPAddress
-                        });
-
-
-                        google.maps.event.addListener(marker, 'mouseover', function () {
-                            infowindow.setContent(obj.Name.trim() + '<br />' + '<a href="' + obj.IPAddress + '" /> <br />' + obj.Address);
-                            infowindow.open(map, marker);
-                        });
-                        markers.push(marker);
-                        google.maps.event.addListener(marker, 'click', function () {
-                            clearfields();
-
-                            if (obj.LightPatternID > 0) {
-                                $('.temp-r').val(obj.Red);
-                                $('.temp-a').val(obj.Amber);
-                                $('.temp-g').val(obj.Green);
-                                currentLigthPatternID = obj.LightPatternID;
-                            }
-                            else {
-                                $.each(templates, function (i, t) {
-                                    if (t.ID == obj.TemplateID) {
-                                        currentTempID = obj.ID;
-                                    }
-                                });
-                            }
-
-                            $('tem-list').val(currentTempID);
-
-                            $('.gov-list').val(obj.GovernerateID);
-                            $('.area-list').val(obj.AreaID);
-
-                            $('.sign-name').val(obj.Name);
-                            $('.sign-long').val(obj.Longitude);
-                            $('.sign-lat').val(obj.Latitude);
-                            $('.sign-ipaddress').val(obj.IPAddress);
-                            $('.temp-list').val(obj.TemplateID);
-                            currentSignID = obj.ID;
-                            map.setZoom(18);
-                            map.setCenter(latlng);
-                            setTimeout(function () {
-                                getScreenshotOfElement($("div#map").get(0), 0, 0, $(document).width(), $(document).height(), function (data) {
-                                    // $("img").attr("background-image", "data:image/png;base64," + data);
-                                    downloadBase64File('image/png', data, 'image');
-                                });
-                            }, 1000);
-                        });
+                        addLocationMarker(obj);
                     });
                 },
-
-                // Error handling
-                error: function (jqXHR, exception) {
-                    var msg = '';
-                    if (jqXHR.status === 0) {
-                        msg = 'Not connect.\n Verify Network.';
-                    } else if (jqXHR.status == 404) {
-                        msg = 'Requested page not found. [404]';
-                    } else if (jqXHR.status == 500) {
-                        msg = 'Internal Server Error [500].';
-                    } else if (exception === 'parsererror') {
-                        msg = 'Requested JSON parse failed.';
-                    } else if (exception === 'timeout') {
-                        msg = 'Time out error.';
-                    } else if (exception === 'abort') {
-                        msg = 'Ajax request aborted.';
-                    } else {
-                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                    }
-                    alert(msg);
-                }
+                error: function () { alert('Locations load error'); }
             });
         }
+
         function listGovernrates() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Governorates/list',
-                type: "GET",
+                url: 'http://localhost/TLC/api/Governorates/list',
+                type: "GET", dataType: "json",
                 success: function (data) {
-                    $('.gov-list')
-                        .find('option')
-                        .remove()
-                        .end();
-
-                    governorates = JSON.parse(data);
+                    $('.gov-list').empty();
+                    governorates = data || [];
                     $.each(governorates, function (i, obj) {
-                        $('.gov-list').append($('<option>', {
-                            value: obj.ID,
-                            text: obj.Name
-                        }));
+                        $('.gov-list').append($('<option>', { value: obj.ID, text: obj.Name }));
                     });
                 },
-                error: function (jqXHR, exception) {
-                }
+                error: function () { }
             });
         }
 
         function listAreas() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Areas/list',
-                type: "GET",
+                url: 'http://localhost/TLC/api/Areas/list',
+                type: "GET", dataType: "json",
                 success: function (data) {
-                    $('.area-list')
-                        .find('option')
-                        .remove()
-                        .end();
-
-                    areas = JSON.parse(data);
+                    $('.area-list').empty();
+                    areas = data || [];
                     $.each(areas, function (i, obj) {
-                        $('.area-list').append($('<option>', {
-                            value: obj.ID,
-                            text: obj.Name
-                        }));
+                        $('.area-list').append($('<option>', { value: obj.ID, text: obj.Name }));
                     });
                 },
-                error: function (jqXHR, exception) {
+                error: function () { }
+            });
+        }
+
+        function autoComplete() {
+            $('#search').autocomplete({
+                minLength: 2,
+                source: function (request, response) {
+                    var term = (request.term || '').toUpperCase();
+                    var results = $.map(locations, function (obj) {
+                        var name = (obj.Name || '').toUpperCase();
+                        var ip = (obj.IPAddress || '').toUpperCase();
+                        if (name.indexOf(term) !== -1 || ip.indexOf(term) !== -1) {
+                            return { label: (obj.Name || '').replace(/   /g, " ") + " [ " + (obj.IPAddress || '') + " ]", value: obj.ID };
+                        }
+                        return null;
+                    });
+                    response(results);
+                },
+                focus: function (event) { event.preventDefault(); },
+                select: function (event, ui) {
+                    event.preventDefault();
+                    $('#search').val(ui.item.label);
+                    var selected = null;
+                    $.each(locations, function (i, l) { if (l.ID == ui.item.value) selected = l; });
+                    if (!selected) return;
+
+                    clearfields();
+                    if (selected.LightPatternID > 0) {
+                        $('.temp-r').val(selected.Red);
+                        $('.temp-a').val(selected.Amber);
+                        $('.temp-g').val(selected.Green);
+                        currentLigthPatternID = selected.LightPatternID;
+                    } else {
+                        $.each(templates, function (i, t) { if (t.ID == selected.TemplateID) currentTempID = selected.ID; });
+                    }
+                    $('.gov-list').val(selected.GovernerateID);
+                    $('.area-list').val(selected.AreaID);
+                    $('.sign-name').val(selected.Name);
+                    $('.sign-long').val(selected.Longitude);
+                    $('.sign-lat').val(selected.Latitude);
+                    $('.sign-ipaddress').val(selected.IPAddress);
+                    $('.temp-list').val(selected.TemplateID);
+                    currentSignID = selected.ID;
+
+                    var latlng = [parseFloat(selected.Latitude), parseFloat(selected.Longitude)];
+                    map.setView(latlng, 18);
                 }
             });
         }
 
-        function initMap() {
-            $("input[type='number']").inputSpinner();
-            $(".input-group").css('margin-left', '-10%');
-            $(".input-group").parent().css('width', '40%');
-
-            map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 8,
-                center: {
-                    lat: 30.0332459,
-                    lng: 31.1679859
-                },
-            });
-
-            geocoder = new google.maps.Geocoder();
-            infowindow = new google.maps.InfoWindow();
-
-            google.maps.event.addListener(map, 'click', function (event) {
-                // do something with event.latLng
-                //alert(getCountry(event.latLng));
-                var pos = event.latLng;
-                geocodeLatLng(geocoder, map, infowindow, pos.toString());
-            });
-            const trafficLayer = new google.maps.TrafficLayer();
-
-            trafficLayer.setMap(map);
-
-
-        }
-
-        function geocodeLatLng(geocoder, map, infowindow, input) {
-            const latlngStr = input.split(",", 2);
-            const latlng = {
-                lat: parseFloat(latlngStr[0].replace('(', '')),
-                lng: parseFloat(latlngStr[1].replace(')', '')),
-            };
-
-            geocoder
-                .geocode({ location: latlng })
-                .then((response) => {
-                    if (response.results[0]) {
-                        map.setZoom(14);
-
-                        var marker = new google.maps.Marker({
-                            position: latlng,
-                            address: response.results[0].formatted_address,
-                            map: map,
-                            icon: image,
-                            ipaddress: '0.0.0.0'
-                        });
-                        google.maps.event.addListener(marker, 'dblclick', function () { alert(marker.ipaddress) });
-                        infowindow.setContent('<strong> New Traffic Sign [0.0.0.0] </strong>');
-                        infowindow.open(map, marker);
-                        clearfields();
-                        var gov = response.results[0].address_components[2].long_name;
-                        var area = response.results[0].address_components[1].long_name;
-                        if (gov.indexOf('Governorate') < 0) {
-                            gov = response.results[0].address_components[3].long_name;
-                            area = response.results[0].address_components[2].long_name;
-                        }
-                        if (gov.indexOf('Governorate') < 0) {
-                            gov = response.results[0].address_components[4].long_name;
-                            area = response.results[0].address_components[3].long_name;
-                        }
-                        gov = gov.replace(/Governorate/g, "");
-                        var govFound = false;
-                        $("gov-list option").each(function () {
-                            if ($(this).text() == gov) {
-                                $(this).attr('selected', 'selected');
-                                govFound = true;
-                            }
-                        });
-                        if (!govFound) {
-                            $('.gov-list').append($('<option>', {
-                                value: new_govid,
-                                text: gov
-                            }));
-                            $('.gov-list').val(new_govid);
-                            new_govid++;
-                        }
-                        else {
-                        }
-
-                        var areaFound = false;
-                        $("area-list option").each(function () {
-                            if ($(this).text() == area) {
-                                $(this).attr('selected', 'selected');
-                                areaFound = true;
-                            }
-                        });
-                        if (!areaFound) {
-                            $('.area-list').append($('<option>', {
-                                value: new_areaid,
-                                text: area
-                            }));
-                            $('.area-list').val(new_areaid);
-                            new_areaid++;
-                        }
-                        else {
-                        }
-
-
-                        $('.sign-name').val(response.results[0].formatted_address);
-                        $('.sign-lat').val(latlng.lat);
-                        $('.sign-long').val(latlng.lng);
-                        $('.sign-name').focus();
-
-
-                    } else {
-                        window.alert("No results found");
-                    }
-                })
-                .catch((e) => window.alert("Geocoder failed due to: " + e));
-        }
-
-        window.initMap = initMap;
-
+        // Screenshot utilities (same as original)
         function getScreenshotOfElement(element, posX, posY, width, height, callback) {
             html2canvas(element, {
                 onrendered: function (canvas) {
@@ -666,156 +518,37 @@
                     var imageData = context.getImageData(posX, posY, width, height).data;
                     var outputCanvas = document.createElement('canvas');
                     var outputContext = outputCanvas.getContext('2d');
-                    outputCanvas.width = width;
-                    outputCanvas.height = height;
-
+                    outputCanvas.width = width; outputCanvas.height = height;
                     var idata = outputContext.createImageData(width, height);
                     idata.data.set(imageData);
                     outputContext.putImageData(idata, 0, 0);
                     callback(outputCanvas.toDataURL().replace("data:image/png;base64,", ""));
                 },
-                width: width,
-                height: height,
-                useCORS: true,
-                taintTest: false,
-                allowTaint: false
+                width: width, height: height, useCORS: true, taintTest: false, allowTaint: false
             });
         }
-
         function downloadBase64File(contentType, base64Data, fileName) {
-            const linkSource = `data:${contentType};base64,${base64Data}`;
+            const linkSource = 'data:' + contentType + ';base64,' + base64Data;
             const downloadLink = document.createElement("a");
-            downloadLink.href = linkSource;
-            downloadLink.download = fileName;
-            downloadLink.click();
+            downloadLink.href = linkSource; downloadLink.download = fileName; downloadLink.click();
         }
+
+        // Init
+        $(document).ready(function () {
+            loadserverdata();
+
+            $('.btn-Apply').click(function () {
+                var obj = {
+                    Name: $('.sign-name').val(),
+                    Longitude: $('.sign-long').val(),
+                    Latitude: $('.sign-lat').val(),
+                    IPAddress: $('.sign-ipaddress').val(),
+                    AreaID: $('.area-list').val(),
+                    R: $('.temp-r').val(), A: $('.temp-a').val(), G: $('.temp-g').val()
+                };
+                updateLocation(obj);
+            });
+        });
     </script>
-</head>
-<body class="bg-signin">
-    <div class="top text-center" style="background-color: #9ed0a6; min-height: 10vh; padding-top: 0.8vh; ">
-        <img src="../img/traffic-light-30625.png" height="65" style="float: left; margin-left: 1vh;" />
-        <h2 class="" style="float: left; margin-top: 1.5vh;"> Traffic Sign Control </h2>
-
-        <div class="col-md-4 col-sm-4 col-xs-4 form-group top_search" style="display: normal; float: left; margin-top: 0.8%; margin-left: 12%;" dir="ltr">
-            <input id="search" style="border-left: 3px solid rgb(10,70,90);" type="text" class="form-control" placeholder=" Location, Name or IP-Address" dir="ltr">
-        </div>
-    </div>
-    <div class="nav-side "></div>
-    <div class="point-select">
-        <div class="x_panel">
-
-            <div class="x_content">
-                <div class="col-md-12">
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 2.5%;" for="govselect">
-                            Governorate <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width:60%;float:right;">
-                            <select class="gov-list select2_multiple form-control" name="govselect">
-                                <option value="1">القاهرة</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
-                            Area <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
-                            <select class="area-list select2_multiple form-control" name="areaselect">
-                                <option value="1">القاهرة الجديدة</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
-                            Name <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
-                            <input class="form-control sign-name" type="text" placeholder="descriptive name" />
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
-                            latitude <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
-                            <input class="form-control sign-lat" type="text" placeholder="latitude" />
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
-                            Longitude <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
-                            <input class="form-control sign-long" type="text" placeholder="longitude" />
-                        </div>
-                    </div>
-
-
-                    <div class="form-group" style="width:100%">
-                        <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
-                            IP-Address <span class="required">*</span>
-                        </label>
-                        <div class="col-md-8" style="width: 60%; float: right; margin-top: -8%;">
-                            <input class="form-control sign-ipaddress" type="text" placeholder="ip-address" />
-                        </div>
-                    </div>
-                    <h5 style="margin-top: 3vh; background-color: #9ed0a6; min-height: 3.5vh; text-align: center; ">Ligth Pattern</h5>
-                    <table border="0" style="width:100%;margin-top:1vh;color:#333;">
-                        <tr>
-                            <td colspan="3">
-                                <div class="custom-control" style="margin-left:0.8vw;width:100%; float:left;">
-                                    <label class="custom-control-label" style="float: left;margin-top:1vh;" for="isOverlaped">Select Template?</label>
-
-                                    <select style="margin-left:3vw;width:50%; float:left;text-align:center;" class="temp-list select2_multiple form-control" name="tempselect">
-                                        <option value="1">-New Pattern-</option>
-                                    </select>
-                                </div>
-                            </td>
-                        </tr>
-                        <thead>
-                            <tr class="light-val">
-                                <td><img src="../img/g.png" class="control-label" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
-                                <td><input class="temp-g" type="number" value="30" min="0" max="1000" step="1" /></td>
-                                <td>sec.</td>
-                            </tr>
-                            <tr class="light-val">
-                                <td><img src="../img/a.png" class="control-label" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
-                                <td><input class="temp-a" type="number" value="10" min="0" max="1000" step="1" /></td>
-                                <td>sec.</td>
-                            </tr>
-                            <tr class="light-val">
-                                <td><img src="../img/r.png" class="control-label" height="65" style="float: left; margin-top: 3%; margin-left: 1vh;" /></td>
-                                <td><input class="temp-r" type="number" value="30" min="0" max="1000" step="1" /></td>
-                                <td>sec.</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" style="text-align:left;">
-                                    <!--<div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
-                                    <input type="checkbox" class="custom-control-input" id="isOverlaped">
-                                    <label class="custom-control-label" for="isOverlaped">Overlap Amber and Green counter</label>
-                                </div>-->
-                                </td>
-                            </tr>
-                        </thead>
-                        <thead class="template-details">
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <img class="sticky" src="../img/nile.png" alt="#" />
-    </div>
-    <div id="map" class="map-view"></div>
-    <div class="point-settings">
-        <button style="min-width: 2.5rem; float:right;margin-left:1vw;" class="btn  btn-outline-success btn-Apply" type="button"><strong>Apply &#10097;</strong></button>
-        <button style="min-width: 2.5rem; float: right;" class="btn  btn-outline-success btn-Delete disabled" type="button"><strong>Delete &#10006;</strong></button>
-    </div>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&v=weekly" defer></script>
 </body>
 </html>

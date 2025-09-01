@@ -1,354 +1,480 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Net.Http;
-//using System.Threading.Tasks;
-//using System.Web;
-//using System.Web.Http;
-//using TrafficSignalLight.DB;
+﻿using System;
+using System.Data.Entity;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Http;
+using TrafficSignalLight.DB;
+using TrafficSignalLight.Dto;
 
-//namespace TrafficSignalLight.Controllers
-//{
-//    public class LocationsController : ApiController
-//    {
-//        private static bool tcpServerInit = false;
+namespace TrafficSignalLight.Controllers
+{
+    public class LocationsController : ApiController
+    {
+        private static bool tcpServerInit = false;
 
-//        // GET: api/Locations
-//        public string Get()
-//        {
-//            //if (TCPServer.ServerStarted)
-//            //    TCPServer.Stop();
+        // GET: api/Locations
+        public string Get()
+        {
+            //if (TCPServer.ServerStarted)
+            //    TCPServer.Stop();
 
-//            //else
-//            //if (!TCPServer.ServerStarted)
-//            //    TCPServer.Start();
+            //else
+            //if (!TCPServer.ServerStarted)
+            //    TCPServer.Start();
 
-//            return Repository.GetObjectJsonString(Repository.GetSigneControlBoxList());
-//        }
+            return Repository.GetObjectJsonString(Repository.GetSigneControlBoxList());
+        }
 
-//        //[HttpPost]
-//        [HttpGet]
-//        [Route("api/Template/list")]
-//        public string GetTemplates()
-//        {
-//            var temps = Repository.GetTemplateList();
-//            return Repository.GetObjectJsonString(temps);
-//        }
+        //[HttpPost]
+        [HttpGet]
+        [Route("api/Template/list")]
+        public async Task<IHttpActionResult> GetTemplates()
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.Templates
+                    .Select(x => new { x.ID, x.Name })
+                    .ToList();
 
-//        [HttpGet]
-//        [Route("api/Pattern/list")]
-//        public string GetPatterns()
-//        {
-//            var patterns = Repository.GetLightPatternList();
-//            return Repository.GetObjectJsonString(patterns);
-//        }
+                return Ok(entities);
+            }
+        }
 
-//        [HttpGet]
-//        [Route("api/TemplatePattern/list")]
-//        public string GetTemplatePatterns()
-//        {
-//            var Temppatterns = Repository.GetTemplatePatternList();
-//            return Repository.GetObjectJsonString(Temppatterns);
-//        }
+        [HttpGet]
+        [Route("api/Pattern/list")]
+        public async Task<IHttpActionResult> GetPatterns()
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.LightPatterns
+                    .Select(x => new
+                    {
+                        x.ID,
+                        x.Name,
+                        x.Red,
+                        x.Green,
+                        x.Amber,
+                        x.GreenAmberOverlab,
+                        x.Pedstrain,
+                        x.ShowPedstrainCounter,
+                        x.SignTemplates
+                    })
+                    .ToList();
 
-//        [HttpGet]
-//        [Route("api/Governorates/list")]
-//        public string GetGoverorates()
-//        {
-//            var govs = Repository.GetGovernerateList();
-//            return Repository.GetObjectJsonString(govs);
-//        }
+                return Ok(entities);
+            }
+        }
 
-//        [HttpGet]
-//        [Route("api/Areas/list")]
-//        public string GetAreas()
-//        {
-//            var areas = Repository.GetAreaList();
-//            return Repository.GetObjectJsonString(areas);
-//        }
+        [HttpGet]
+        [Route("api/TemplatePattern/list")]
+        public async Task<IHttpActionResult> GetTemplatePatterns()
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.TemplatePatterns
+                    .Select(x => new { x.ID, x.TemplateID, x.PetternID, x.StartFrom, x.FinishBy })
+                    .ToList();
 
-//        //[HttpPost]
-//        [HttpGet]
-//        [Route("api/Pattern/Set")]
-//        public string SetPattern()
-//        {
-//            var x = Request.RequestUri;
-//            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-//            string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
-//            string RedInterval = HttpUtility.ParseQueryString(x.Query).Get("R");
-//            string AmberInterval = HttpUtility.ParseQueryString(x.Query).Get("A");
-//            string GreenInterval = HttpUtility.ParseQueryString(x.Query).Get("G");
+                var test = entities;
 
-//            int patternid = 0;
-//            int green = 0;
-//            int amber = 0;
-//            int red = 0;
+                return Ok(entities);
+            }
+        }
 
-//            int.TryParse(ID, out patternid);
-//            int.TryParse(GreenInterval, out green);
-//            int.TryParse(AmberInterval, out amber);
-//            int.TryParse(RedInterval, out red);
+        [HttpGet]
+        [Route("api/Governorates/list")]
+        public async Task<IHttpActionResult> GetGoverorates()
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.Governerates
+                    .Select(x => new { x.ID, x.Name, x.Latitude, x.Longitude })
+                    .ToList();
 
-//            if (patternid < 0)
-//            {
-//                Repository.DeleteLightPattern(patternid * -1);
-//                return "Ok";
-//            }
-//            else
-//            {
-//                if (!String.IsNullOrEmpty(Name) && !(red == 0 && green == 0 && amber == 0))
-//                {
-//                    patternid = Repository.UpdateLightPattern(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
-//                }
-//                else
-//                    return "Incorrect pattern data!";
+                return Ok(entities);
+            }
+        }
 
-//                if (patternid > 0)
-//                {
-//                    return "Ok";
-//                }
-//            }
+        [HttpGet]
+        [Route("api/Areas/list")]
+        public async Task<IHttpActionResult> GetAreas()
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.Areas
+                    .Select(x => new { x.ID, x.Name, x.Latitude, x.Longitude })
+                    .ToList();
 
-//            return "Failed to save pattern";
-//        }
+                return Ok(entities);
+            }
+        }
 
-//        [HttpGet]
-//        [Route("api/Template/Set")]
-//        public string Template()
-//        {
-//            var x = Request.RequestUri;
-//            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-//            string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
+        //[HttpPost]
+        [HttpGet]
+        [Route("api/Pattern/Set")]
+        public string SetPattern()
+        {
+            //var x = Request.RequestUri;
+            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
+            //string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
+            //string RedInterval = HttpUtility.ParseQueryString(x.Query).Get("R");
+            //string AmberInterval = HttpUtility.ParseQueryString(x.Query).Get("A");
+            //string GreenInterval = HttpUtility.ParseQueryString(x.Query).Get("G");
 
-//            int id = 0;
-//            int.TryParse(ID, out id);
+            //int patternid = 0;
+            //int green = 0;
+            //int amber = 0;
+            //int red = 0;
 
-//            if (id < 0)
-//            {
-//                Repository.DeleteTemplate(id * -1);
-//                return "Template deleted successfully";
-//            }
+            //int.TryParse(ID, out patternid);
+            //int.TryParse(GreenInterval, out green);
+            //int.TryParse(AmberInterval, out amber);
+            //int.TryParse(RedInterval, out red);
 
-//            id = Repository.UpdateTemplate(new Template() { ID = id, Name = Name });
-//            if (id > 0)
-//            {
-//                return "Ok#" + id.ToString();
-//            }
+            //if (patternid < 0)
+            //{
+            //    Repository.DeleteLightPattern(patternid * -1);
+            //    return "Ok";
+            //}
+            //else
+            //{
+            //    if (!String.IsNullOrEmpty(Name) && !(red == 0 && green == 0 && amber == 0))
+            //    {
+            //        patternid = Repository.UpdateLightPattern(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
+            //    }
+            //    else
+            //        return "Incorrect pattern data!";
 
-//            return "Failed to save pattern";
-//        }
+            //    if (patternid > 0)
+            //    {
+            //        return "Ok";
+            //    }
+            //}
 
-//        [HttpGet]
-//        [Route("api/TemplatePattern/Set")]
-//        public string TemplatePattern()
-//        {
-//            var x = Request.RequestUri;
-//            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-//            string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
-//            string PatternID = HttpUtility.ParseQueryString(x.Query).Get("PatternID");
-//            string StartFrom = HttpUtility.ParseQueryString(x.Query).Get("StartFrom");
-//            string FinishBy = HttpUtility.ParseQueryString(x.Query).Get("FinishBy");
+            return "Failed to save pattern";
+        }
 
-//            int id = 0;
-//            int patternid = 0;
-//            int templateid = 0;
-//            TimeSpan startfrom = new TimeSpan(0, 0, 0);
-//            TimeSpan finishby = new TimeSpan(0, 0, 0);
+        [HttpGet]
+        [Route("api/Template/Set")]
+        public string Template()
+        {
+            //var x = Request.RequestUri;
+            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
+            //string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
 
-//            int.TryParse(ID, out id);
-//            int.TryParse(TemplateID, out templateid);
-//            int.TryParse(PatternID, out patternid);
-//            TimeSpan.TryParse(StartFrom, out startfrom);
-//            TimeSpan.TryParse(FinishBy, out finishby);
+            //int id = 0;
+            //int.TryParse(ID, out id);
 
-//            //patternid = Repository.UpdateTemplatePatterns(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
+            //if (id < 0)
+            //{
+            //    Repository.DeleteTemplate(id * -1);
+            //    return "Template deleted successfully";
+            //}
 
-//            if (patternid > 0)
-//            {
-//                return "Ok";
-//            }
+            //id = Repository.UpdateTemplate(new Template() { ID = id, Name = Name });
+            //if (id > 0)
+            //{
+            //    return "Ok#" + id.ToString();
+            //}
 
-//            return "Failed to save pattern";
-//        }
+            return "Failed to save pattern";
+        }
 
-//        [HttpGet]
-//        [Route("api/TemplatePatterns/Set")]
-//        public string TemplatePatterns()
-//        {
-//            var x = Request.RequestUri;
-//            string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
-//            string Data = HttpUtility.ParseQueryString(x.Query).Get("Data");
+        [HttpGet]
+        [Route("api/TemplatePattern/Set")]
+        public string TemplatePattern()
+        {
+            //var x = Request.RequestUri;
+            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
+            //string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
+            //string PatternID = HttpUtility.ParseQueryString(x.Query).Get("PatternID");
+            //string StartFrom = HttpUtility.ParseQueryString(x.Query).Get("StartFrom");
+            //string FinishBy = HttpUtility.ParseQueryString(x.Query).Get("FinishBy");
 
-//            int templateid = 0;
-//            int.TryParse(TemplateID, out templateid);
+            //int id = 0;
+            //int patternid = 0;
+            //int templateid = 0;
+            //TimeSpan startfrom = new TimeSpan(0, 0, 0);
+            //TimeSpan finishby = new TimeSpan(0, 0, 0);
 
-//            var list = Repository.GetJsonObject<List<TemplatePattern>>(Data);
+            //int.TryParse(ID, out id);
+            //int.TryParse(TemplateID, out templateid);
+            //int.TryParse(PatternID, out patternid);
+            //TimeSpan.TryParse(StartFrom, out startfrom);
+            //TimeSpan.TryParse(FinishBy, out finishby);
 
-//            if (list.Any())
-//            {
-//                templateid = Repository.UpdateTemplatePatterns(templateid, list);
-//            }
-//            if (templateid > 0)
-//            {
-//                return "Ok";
-//            }
+            ////patternid = Repository.UpdateTemplatePatterns(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
 
-//            return "Failed To Save Template Pattern Schedule";
-//        }
+            //if (patternid > 0)
+            //{
+            //    return "Ok";
+            //}
 
-//        //[HttpPost]
-//        [HttpGet]
-//        [Route("api/Locations/Set")]
-//        public async Task<string> SetLocation()
-//        {
-//            var x = Request.RequestUri;
-//            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-//            string AreaID = HttpUtility.ParseQueryString(x.Query).Get("AreaID");
-//            string GovernerateID = HttpUtility.ParseQueryString(x.Query).Get("AGovernerateID");
-//            string AreaName = HttpUtility.ParseQueryString(x.Query).Get("AreaName");
-//            string GovernerateName = HttpUtility.ParseQueryString(x.Query).Get("GovernerateName");
-//            string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
-//            string IPAddress = HttpUtility.ParseQueryString(x.Query).Get("IPAddress");
-//            string Latitude = HttpUtility.ParseQueryString(x.Query).Get("Latitude");
-//            string Longitude = HttpUtility.ParseQueryString(x.Query).Get("Longitude");
+            return "Failed to save pattern";
+        }
 
-//            int signID = 0;
-//            int areaID = 0;
-//            int govID = 0;
-//            int.TryParse(ID, out signID);
-//            int.TryParse(AreaID, out areaID);
-//            int.TryParse(GovernerateID, out govID);
+        [HttpGet]
+        [Route("api/TemplatePatterns/Set")]
+        public string TemplatePatterns()
+        {
+            //var x = Request.RequestUri;
+            //string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
+            //string Data = HttpUtility.ParseQueryString(x.Query).Get("Data");
 
-//            if (areaID <= 0)
-//            {
-//                var govObj = Repository.GetGovernerate(GovernerateName.TrimEnd().TrimStart());
-//                if (govObj == null)
-//                {
-//                    govID = Repository.UpdateGovernerate(new Governerate() { Name = GovernerateName });
-//                }
-//                else
-//                {
-//                    govID = govObj.ID;
-//                }
+            //int templateid = 0;
+            //int.TryParse(TemplateID, out templateid);
 
-//                var areaObj = Repository.GetArea(AreaName.TrimEnd().TrimStart());
-//                if (areaObj == null && govID > 0)
-//                {
-//                    areaID = Repository.UpdateArea(new Area() { Name = AreaName, GovernorateID = govID });
-//                }
-//                else
-//                {
-//                    areaID = areaObj.ID;
-//                }
-//            }
+            //var list = Repository.GetJsonObject<List<TemplatePattern>>(Data);
 
-//            SigneControlBox signeControlBox = new SigneControlBox()
-//            { ID = signID, AreaID = areaID, IPAddress = IPAddress, Latitude = Latitude, Longitude = Longitude, Name = Name, Address = "" };
+            //if (list.Any())
+            //{
+            //    templateid = Repository.UpdateTemplatePatterns(templateid, list);
+            //}
+            //if (templateid > 0)
+            //{
+            //    return "Ok";
+            //}
 
-//            int boxid = Repository.UpdateSigneControlBox(signeControlBox);
+            return "Failed To Save Template Pattern Schedule";
+        }
 
-//            if (boxid > 0)
-//            {
-//                string RedInterval = HttpUtility.ParseQueryString(x.Query).Get("R");
-//                string AmberInterval = HttpUtility.ParseQueryString(x.Query).Get("A");
-//                string GreenInterval = HttpUtility.ParseQueryString(x.Query).Get("G");
+        //[HttpPost]
+        [HttpGet]
+        [Route("api/Locations/Set")]
+        public async Task<IHttpActionResult> SetLocation([FromUri] SetLocationRequest req)
+        {
+            if (req == null) return BadRequest("Empty request.");
+            if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest("Name is required.");
+            if (req.Latitude < -90 || req.Latitude > 90) return BadRequest("Latitude out of range.");
+            if (req.Longitude < -180 || req.Longitude > 180) return BadRequest("Longitude out of range.");
 
-//                string BlinkRed = HttpUtility.ParseQueryString(x.Query).Get("bR");
-//                string BlinkAmber = HttpUtility.ParseQueryString(x.Query).Get("bA");
-//                string BlinkGreen = HttpUtility.ParseQueryString(x.Query).Get("bG");
+            using (var db = new TraficLightSignesEntities2())
+            {
+                db.Configuration.LazyLoadingEnabled = false;
+                db.Configuration.ProxyCreationEnabled = false;
 
-//                string ChangeMain = HttpUtility.ParseQueryString(x.Query).Get("cM");
+                // 1) Resolve Area/Governorate (نفس المنطق اللي عندك)
+                int areaId = req.AreaID ?? 0;
+                int govId = req.GovernerateID ?? 0;
 
-//                string LightPatternID = HttpUtility.ParseQueryString(x.Query).Get("LightPatternID");
-//                string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
+                if (areaId <= 0)
+                {
+                    if (govId <= 0 && !string.IsNullOrWhiteSpace(req.GovernerateName))
+                    {
+                        var gov = await db.Governerates.FirstOrDefaultAsync(g => g.Name == req.GovernerateName);
+                        if (gov == null)
+                        {
+                            gov = new Governerate { Name = req.GovernerateName.Trim() };
+                            db.Governerates.Add(gov);
+                            await db.SaveChangesAsync();
+                        }
+                        govId = gov.ID;
+                    }
 
-//                int green = 0;
-//                int amber = 0;
-//                int red = 0;
+                    if (govId > 0 && !string.IsNullOrWhiteSpace(req.AreaName))
+                    {
+                        var area = await db.Areas.FirstOrDefaultAsync(a => a.Name == req.AreaName && a.GovernorateID == govId);
+                        if (area == null)
+                        {
+                            area = new Area { Name = req.AreaName.Trim(), GovernorateID = govId };
+                            db.Areas.Add(area);
+                            await db.SaveChangesAsync();
+                        }
+                        areaId = area.ID;
+                    }
+                }
 
-//                bool bgreen = false;
-//                bool bamber = false;
-//                bool bred = false;
+                if (areaId <= 0) return BadRequest("Area could not be resolved/created.");
 
-//                bool changeMain = false;
+                // 2) Upsert SigneControlBox
+                SigneControlBox box = null;
+                if (req.ID.HasValue && req.ID.Value > 0)
+                    box = await db.SigneControlBoxes.FirstOrDefaultAsync(b => b.ID == req.ID.Value);
 
-//                int templateID = 0;
-//                int patternid = 0;
+                if (box == null)
+                {
+                    box = new SigneControlBox();
+                    db.SigneControlBoxes.Add(box);
+                }
 
-//                int.TryParse(GreenInterval, out green);
-//                int.TryParse(AmberInterval, out amber);
-//                int.TryParse(RedInterval, out red);
+                box.AreaID = areaId;
+                box.IPAddress = (req.IPAddress ?? "").Trim();
+                box.Latitude = req.Latitude.ToString(CultureInfo.InvariantCulture);
+                box.Longitude = req.Longitude.ToString(CultureInfo.InvariantCulture);
+                box.Name = req.Name?.Trim();
+                if (string.IsNullOrWhiteSpace(box.Address)) box.Address = "";
 
-//                bool.TryParse(BlinkGreen, out bgreen);
-//                bool.TryParse(BlinkAmber, out bamber);
-//                bool.TryParse(BlinkRed, out bred);
+                await db.SaveChangesAsync();
 
-//                bool.TryParse(ChangeMain, out changeMain);
+                // 3) LightPattern/Template logic + اختيار القيم التي سنرسلها
+                int red = req.R, yel = req.A, grn = req.G;   // default من الطلب
+                int patternId = req.LightPatternID;
 
-//                int.TryParse(TemplateID, out templateID);
-//                int.TryParse(LightPatternID, out patternid);
+                if (req.TemplateID == 0)
+                {
+                    // Upsert LightPattern على نفس قيم R/A/G القادمة من الطلب
+                    LightPattern pattern = null;
+                    if (patternId > 0)
+                        pattern = await db.LightPatterns.FirstOrDefaultAsync(p => p.ID == patternId);
 
-//                if (templateID == 0)
-//                {
-//                    patternid = Repository.UpdateLightPattern(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
-//                    if (patternid > 0)
-//                    {
-//                        signeControlBox.LightPatternID = patternid;
-//                        Repository.UpdateSigneControlBox(signeControlBox);
-//                    }
-//                }
-//                else { }
+                    if (pattern == null)
+                    {
+                        pattern = new LightPattern();
+                        db.LightPatterns.Add(pattern);
+                    }
 
-//                /*Compose here*/
-//                {
-//                    string R_Value = ByteArrayToString(GetBytes(red));
-//                    string A_Value = ByteArrayToString(GetBytes(amber));
-//                    string G_Value = ByteArrayToString(GetBytes(green));
+                    pattern.Name = box.Name;
+                    pattern.Red = red;
+                    pattern.Amber = yel;
+                    pattern.Green = grn;
+                    pattern.GreenAmberOverlab = false;
+                    pattern.Pedstrain = 0;
+                    pattern.ShowPedstrainCounter = false;
+                    pattern.ShowSigneCounter = false;
 
-//                    string blink500ml = "01F4";
+                    await db.SaveChangesAsync();
+                    box.LightPatternID = pattern.ID;
+                    await db.SaveChangesAsync();
+                    patternId = pattern.ID; // لأغراض الردّ
+                }
+                else
+                {
+                    // عند وجود TemplateID: خزّنه في الصندوق
+                    //  box.TemplateID = req.TemplateID;
+                    await db.SaveChangesAsync();
 
-//                    byte[] redBytes = BitConverter.GetBytes(red);
-//                    byte[] yellowBytes = BitConverter.GetBytes(amber);
-//                    byte[] greenBytes = BitConverter.GetBytes(green);
+                    // اختياري: لو حابب تبعت قيم النمط النشط من القالب (جدول TemplatePatterns),
+                    // تقدر تحلّه زى ApplyCurrent؛ هنا نخلي الإرسال يعتمد على قيم الطلب R/A/G إن حابب تبقى واضحة:
+                    // أو (مثال) تحميل قيم patternId (لو عندك) من DB بدل R/A/G:
+                    // var lp = await db.LightPatterns.Where(p => p.ID == patternId).Select(p => new { p.Red, p.Amber, p.Green}).FirstOrDefaultAsync();
+                    // if (lp != null) { red = lp.Red; yel = lp.Amber; grn = lp.Green; }
+                }
 
-//                    // send to GSM Or TCP
-//                    string CMD = "7B01AC" + R_Value + A_Value + G_Value + "0000007D";
-//                    var requestgURL = "http://197.168.208.50/" + CMD;
+                // 4) Build & Send V2 (زي ApplyCurrent بالضبط)
+                int blinkMs = req.BlinkMs ?? 500;
+                int blinkByte = Math.Max(0, Math.Min(255, blinkMs / 100)); // 500ms => 5
 
-//                    using (HttpClient client = new HttpClient())
-//                    {
-//                        try
-//                        {
-//                            HttpResponseMessage response = await client.GetAsync(requestgURL);
-//                            if (response.IsSuccessStatusCode)
-//                            {
-//                                string respContent = await response.Content.ReadAsStringAsync();
-//                            }
-//                        }
-//                        catch (Exception ex)
-//                        {
-//                        }
-//                    }
+                bool bR = req.BlinkRed ?? false;
+                bool bY = req.BlinkAmber ?? false;
+                bool bG = req.BlinkGreen ?? false;
+                bool ch = req.ChangeMain ?? false;
 
-//                    //TCPClient.Send(IPAddress.Trim(), CMD);
+                // DeviceId: من الطلب أو من أقل 8 بت من SignId
+                int signId = box.ID;
+                int deviceId = req.DeviceId.HasValue ? req.DeviceId.Value : (signId & 0xFF);
 
-//                    byte[] data = { 0x7B, 0x01, 0xAC,/*Red*/0x0, redBytes[0],/*Yellow*/ 0x0, yellowBytes[0], /*Green*/0x0, greenBytes[0],/*blink timer*/ 0x01, 0xF4,/*blink red*/ bred ? (byte)1 : (byte)0,/*blink yellow*/  bamber ? (byte)1 : (byte)0,/*blink green*/  bgreen ? (byte)1 : (byte)0,/*display timer*/ 0x0,/*cross as main*/ 0x0,/*change main*/changeMain ? (byte)1 : (byte)0, 0x7D };
-//                    // TCPClient.Send(IPAddress.Trim(), data);
-//                }
-//            }
-//            return "Ok";
-//        }
+                bool sent;
+                string transport;
+                string hexPreview = SignalProtocolV2.BuildHexV2(
+                    deviceId, red, yel, grn,
+                    blinkByte, bR, bY, bG,
+                    0, 0, ch ? 1 : 0
+                );
 
-//        private byte[] GetBytes(int i)
-//        {
-//            byte b0 = (byte)i,
-//                b1 = (byte)(i >> 8);
-//            return new byte[] { b1, b0 };
-//        }
+                if (req.UseTcp)
+                {
+                    var frame = SignalProtocolV2.BuildFrameV2(
+                        deviceId, red, yel, grn,
+                        blinkByte, bR, bY, bG,
+                        0, 0, ch ? 1 : 0
+                    );
+                    sent = await SignalProtocolV2.SendTcpAsync(box.IPAddress, req.TcpPort, frame);
+                    transport = "tcp";
+                }
+                else
+                {
+                    sent = await SignalProtocolV2.SendHttpAsync(box.IPAddress, hexPreview);
+                    transport = "http";
+                }
 
-//        public static string ByteArrayToString(byte[] ba)
-//        {
-//            return BitConverter.ToString(ba).Replace("-", "");
-//        }
-//    }
-//}
+                if (!sent)
+                {
+                    return Content(HttpStatusCode.BadGateway, new
+                    {
+                        message = "Failed to send command to device.",
+                        signId = signId,
+                        patternId = patternId,
+                        ip = box.IPAddress,
+                        transportTried = transport,
+                        hex = hexPreview
+                    });
+                }
+
+                // 5) Response
+                return Ok(new
+                {
+                    message = "Saved and applied (V2).",
+                    signId = signId,
+                    patternId = patternId,
+                    ip = box.IPAddress,
+                    transport,
+                    hex = hexPreview
+                });
+            }
+        }
+
+        private byte[] GetBytes(int i)
+        {
+            byte b0 = (byte)i,
+                b1 = (byte)(i >> 8);
+            return new byte[] { b1, b0 };
+        }
+
+        public static string ByteArrayToString(byte[] ba)
+        {
+            return BitConverter.ToString(ba).Replace("-", "");
+        }
+
+        private static byte[] GetBytesBE(int n)
+        {
+            // 16-bit big-endian (00 00 .. FF FF) حسب بروتوكولك
+            return new byte[] { (byte)((n >> 8) & 0xFF), (byte)(n & 0xFF) };
+        }
+
+        private static string ByteArrayToHex(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        private static string ToHex16BE(int value) => ByteArrayToHex(GetBytesBE(value));
+
+        public class SetLocationRequest
+        {
+            public int? ID { get; set; }
+
+            public int? AreaID { get; set; }
+            public string AreaName { get; set; }
+
+            public int? GovernerateID { get; set; }
+            public string GovernerateName { get; set; }
+
+            public string Name { get; set; }
+            public string IPAddress { get; set; }
+
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
+
+            public int R { get; set; }     // red seconds (0..255 final)
+            public int A { get; set; }     // amber/yellow
+            public int G { get; set; }     // green
+
+            public bool? BlinkRed { get; set; }
+            public bool? BlinkAmber { get; set; }
+            public bool? BlinkGreen { get; set; }
+            public int? BlinkMs { get; set; }      // default 500ms → يحوَّل إلى بايت
+
+            public bool? ChangeMain { get; set; }  // 0/1
+
+            public int TemplateID { get; set; }
+            public int LightPatternID { get; set; }
+
+            // خيارات الإرسال:
+            public bool UseTcp { get; set; } = false;
+
+            public int TcpPort { get; set; } = 502; // حسب جهازك
+            public int? DeviceId { get; set; }      // إن ما أُرسِلش، هنشتقّه من SignId (ID)
+        }
+    }
+}

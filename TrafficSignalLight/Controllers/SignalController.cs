@@ -23,7 +23,7 @@ namespace TrafficSignalLight.Controllers
             string message = JsonSerializer.Serialize(response);
             hub.Clients.All.ReceiveMessage("Server", message ?? "");
             //hub.Clients.All.TrafficSignal(message);
-            var testMessage = "http://197.168.208.50/7B0100000A0005000D00000000000000007D";
+            // var testMessage = "http://197.168.208.50/7B0100000A0005000D00000000000000007D";
 
             return;
         }

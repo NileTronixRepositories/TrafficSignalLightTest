@@ -384,6 +384,7 @@
     <Compile Include="Area.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\LocationInfoController.cs" />
     <Compile Include="Controllers\LocationsController.cs" />
     <Compile Include="Controllers\SignalController.cs" />
     <Compile Include="Dto\SignalProtocolV2.cs" />
