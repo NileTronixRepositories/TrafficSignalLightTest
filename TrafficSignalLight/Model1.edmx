@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="TraficLightSignesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="TraficLightSignesModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Area">
           <Key>
             <PropertyRef Name="ID" />
@@ -50,6 +50,8 @@
           <Property Name="Address" Type="nvarchar(max)" Nullable="false" />
           <Property Name="Longitude" Type="nchar" MaxLength="50" />
           <Property Name="Latitude" Type="nchar" MaxLength="50" />
+          <Property Name="DirectionOne" Type="nvarchar" MaxLength="50" />
+          <Property Name="DirectionTwo" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="SignTemplate">
           <Key>
@@ -204,8 +206,7 @@
             <End Role="TemplatePattern" EntitySet="TemplatePattern" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="TraficLightSignesModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -261,6 +262,8 @@
           <Property Name="Latitude" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
           <NavigationProperty Name="Area" Relationship="Self.FK_SigneControlBox_Area" FromRole="SigneControlBox" ToRole="Area" />
           <NavigationProperty Name="SignTemplates" Relationship="Self.FK_SignTemplate_Sign" FromRole="SigneControlBox" ToRole="SignTemplate" />
+          <Property Name="DirectionOne" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="DirectionTwo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="SignTemplate">
           <Key>
@@ -465,6 +468,8 @@
           <EntitySetMapping Name="SigneControlBoxes">
             <EntityTypeMapping TypeName="TraficLightSignesModel.SigneControlBox">
               <MappingFragment StoreEntitySet="SigneControlBox">
+                <ScalarProperty Name="DirectionTwo" ColumnName="DirectionTwo" />
+                <ScalarProperty Name="DirectionOne" ColumnName="DirectionOne" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="AreaID" ColumnName="AreaID" />
                 <ScalarProperty Name="LightPatternID" ColumnName="LightPatternID" />

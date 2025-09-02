@@ -28,6 +28,8 @@ namespace TrafficSignalLight
         public string Address { get; set; }
         public string Longitude { get; set; }
         public string Latitude { get; set; }
+        public string DirectionOne { get; set; }
+        public string DirectionTwo { get; set; }
     
         public virtual Area Area { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
