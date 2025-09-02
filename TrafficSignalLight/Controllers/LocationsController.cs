@@ -37,7 +37,6 @@ namespace TrafficSignalLight.Controllers
                 var entities = db.Templates
                     .Select(x => new { x.ID, x.Name })
                     .ToList();
-
                 return Ok(entities);
             }
         }
@@ -240,10 +239,10 @@ namespace TrafficSignalLight.Controllers
             return "Failed To Save Template Pattern Schedule";
         }
 
-        //[HttpPost]
-        [HttpGet]
+        [HttpPost]
+        //[HttpGet]
         [Route("api/Locations/Set")]
-        public async Task<IHttpActionResult> SetLocation([FromUri] SetLocationRequest req)
+        public async Task<IHttpActionResult> SetLocation([FromBody] SetLocationRequest req)
         {
             if (req == null) return BadRequest("Empty request.");
             if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest("Name is required.");
