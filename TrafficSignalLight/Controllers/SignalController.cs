@@ -19,6 +19,9 @@ namespace TrafficSignalLight.Controllers
         [Route("api/signal/log")]
         public async Task Log(TrafficLightResponse response)
         {
+            //response.L1 = response.L1.ToString();
+            //response.L2 = response.L2.ToString();
+
             string message = JsonSerializer.Serialize(response);
             hub.Clients.All.ReceiveMessage("Server", message ?? "");
             //hub.Clients.All.TrafficSignal(message);

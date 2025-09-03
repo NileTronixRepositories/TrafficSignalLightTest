@@ -16,43 +16,37 @@ namespace TrafficSignalLight.Dto
         }
 
         public static byte[] BuildFrameV2(
-         int deviceId,
-         int intervalRed,
-         int intervalYellow,
-         int intervalGreen,
-         int blinkInterval,
-         bool blinkRed, bool blinkYellow, bool blinkGreen,
-         int displayTimer = 0,
-         int crossAsMain = 0,
-         int changeMain = 0
-     )
+            int deviceId, int intervalRed, int intervalYellow, int intervalGreen,
+            int blinkInterval, bool blinkRed, bool blinkYellow, bool blinkGreen,
+            int displayTimer = 0, int crossAsMain = 0, int changeMain = 0)
         {
             byte id = ClampU8(deviceId);
             byte red = ClampU8(intervalRed);
             byte yel = ClampU8(intervalYellow);
             byte grn = ClampU8(intervalGreen);
-            byte blink = ClampU8(blinkInterval);
+            // كان: byte blink = ClampU8(blinkInterval);
+            byte blink = 0; // <-- force 00 always
 
             return new byte[]
             {
-            0x7B,
-            id,
-            0x00,               // ثابت 00 (الأول)
-            0x00,               // ثابت 00 (الثاني) ← الإضافة الجديدة
-            red,
-            0x00,
-            yel,
-            0x00,
-            grn,
-            blink,
-            (byte)(blinkRed    ? 1 : 0),
-            (byte)(blinkYellow ? 1 : 0),
-            (byte)(blinkGreen  ? 1 : 0),
-            ClampU8(displayTimer),
-            ClampU8(crossAsMain),
-            ClampU8(changeMain),
-            0x00,               // بايت Reserved إضافي قبل 7D ← الإضافة الجديدة
-            0x7D
+        0x7B,
+        id,
+        0x00,
+        0x00,
+        red,
+        0x00,
+        yel,
+        0x00,
+        grn,
+        blink,                // دايمًا 00
+        (byte)(blinkRed    ? 1 : 0),
+        (byte)(blinkYellow ? 1 : 0),
+        (byte)(blinkGreen  ? 1 : 0),
+        ClampU8(displayTimer),
+        ClampU8(crossAsMain),
+        ClampU8(changeMain),
+        0x00,
+        0x7D
             };
         }
 
