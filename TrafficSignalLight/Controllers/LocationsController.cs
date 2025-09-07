@@ -89,7 +89,7 @@ namespace TrafficSignalLight.Controllers
             using (var db = new TraficLightSignesEntities2())
             {
                 var entities = db.TemplatePatterns.Where(x => x.TemplateID == id)
-                    .Select(x => new { x.Template.Name, x.StartFrom, x.FinishBy })
+                    .Select(x => new { x.LightPattern.Name, x.StartFrom, x.FinishBy })
                     .ToList();
                 return Ok(entities);
             }

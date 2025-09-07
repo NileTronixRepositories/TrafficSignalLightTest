@@ -36,7 +36,6 @@
             background-position-y: left;
         }
 
-
         .map-view {
             height: 76vh;
             width: 64vw;
@@ -342,7 +341,6 @@
             CrossAsMain = _command.CrossAsMain;
         }
 
-
         var _command = new Object();
         function runCommand() {
             _command.BlinkInterval = 500;
@@ -507,7 +505,7 @@
         }
         function updateLocation(obj) {
             $.ajax({
-                url: "http://127.0.0.1/TrafficSignalLight/api/Locations/Set",
+                url: "http://localhost/TLC/api/Locations/Set",
                 data: {
                     "ID": currentSignID,
                     "GovernerateName": $('.gov-list  option:selected').text(),
@@ -556,11 +554,11 @@
 
         function listPatterns() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Pattern/list',
+                url: 'http://localhost/TLC/api/Pattern/list',
                 type: "GET",
                 success: function (data) {
                     $('.pattern-list').empty();
-                    patterns = JSON.parse(data);
+                    patterns = data;
                     var Item = new Object();
                     Item.ID = 0;
                     Item.Name = '- New Pattern -';
@@ -596,10 +594,10 @@
         }
         function listTemplatePatterns() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/TemplatePattern/list',
+                url: 'http://localhost/TLC/api/TemplatePattern/list',
                 type: "GET",
                 success: function (data) {
-                    templatepatterns = JSON.parse(data);
+                    templatepatterns = data;
                 },
                 error: function (jqXHR, exception) {
                 }
@@ -607,10 +605,10 @@
         }
         function listTemplates() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Template/list',
+                url: 'http://localhost/TLC/api/Template/list',
                 type: "GET",
                 success: function (data) {
-                    templates = JSON.parse(data);
+                    templates = data;
                     var tempItem = new Object();
                     tempItem.ID = 0;
                     tempItem.Name = '- N/A -';
@@ -686,24 +684,22 @@
                         }
                     });
 
-
                     if (o != null) {
                         let dynamicRowHTML = `
-                                                <tr class="schedule-row" style="text-align:left;border-bottom: 2px solid #9ed0a6;">
-                                                    <td style="width:50%">
-                                                        <img src="../img/clr.png" class="control-label" height="35" style="float: left; margin-top: 1%; margin-left: 0vh;margin-bottom:1vh;" />
-                                                        <label class="control-label template-pattern-name" style="font-size:1em; margin-left:1vw;margin-top:1vh;margin-bottom:1vh;">
-                                                            `+ name + `
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <label class="form-control" style="font-size:1em; margin-left:0vw;width:9+++++++++++++0%;margin-top:1vh;margin-bottom:1vh;"> ` + o.StartFrom + `</label>
-
-                                                    </td>
-                                                    <td>
-                                                        <label class="form-control" style="font-size:1em; margin-left:1vw;width:80%;margin-top:1vh;margin-bottom:1vh;"> ` + o.FinishBy + `</label>
-                                                    </td>
-                                                </tr>`;
+                                                                                                    <tr class="schedule-row" style="text-align:left;border-bottom: 2px solid #9ed0a6;">
+                                                                                                        <td style="width:50%">
+                                                                                                            <img src="../img/clr.png" class="control-label" height="35" style="float: left; margin-top: 1%; margin-left: 0vh;margin-bottom:1vh;" />
+                                                                                                            <label class="control-label template-pattern-name" style="font-size:1em; margin-left:1vw;margin-top:1vh;margin-bottom:1vh;">
+                                                                                                                `+ name + `
+                                                                                                            </label>
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <label class="form-control" style="font-size:1em; margin-left:0vw;width:9+++++++++++++0%;margin-top:1vh;margin-bottom:1vh;"> ` + o.StartFrom + `</label>
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <label class="form-control" style="font-size:1em; margin-left:1vw;width:80%;margin-top:1vh;margin-bottom:1vh;"> ` + o.FinishBy + `</label>
+                                                                                                        </td>
+                                                                                                    </tr>`;
                         $('.template-details').append(dynamicRowHTML);
                     }
                 }
@@ -712,10 +708,10 @@
 
         function listLocations() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Locations',
+                url: 'http://localhost/TLC/api/Locations',
                 type: "GET",
                 success: function (data) {
-                    let x = JSON.parse(data);
+                    let x = data;
                     $.each(x, function (i, obj) {
                         locations.push(obj);
                     });
@@ -745,7 +741,7 @@
         }
         function listGovernrates() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Governorates/list',
+                url: 'http://localhost/TLC/api/Governorates/list',
                 type: "GET",
                 success: function (data) {
                     $('.gov-list')
@@ -753,7 +749,7 @@
                         .remove()
                         .end();
 
-                    governorates = JSON.parse(data);
+                    governorates = data;
                     $.each(governorates, function (i, obj) {
                         $('.gov-list').append($('<option>', {
                             value: obj.ID,
@@ -768,7 +764,7 @@
 
         function listAreas() {
             $.ajax({
-                url: 'http://localhost/TrafficSignalLight/api/Areas/list',
+                url: 'http://localhost/TLC/api/Areas/list',
                 type: "GET",
                 success: function (data) {
                     $('.area-list')
@@ -776,7 +772,7 @@
                         .remove()
                         .end();
 
-                    areas = JSON.parse(data);
+                    areas = data;
                     $.each(areas, function (i, obj) {
                         $('.area-list').append($('<option>', {
                             value: obj.ID,
@@ -853,7 +849,6 @@
                             <input class="form-control sign-long" type="text" placeholder="longitude" />
                         </div>
                     </div>
-
 
                     <div class="form-group" style="width:100%">
                         <label class="control-label col-md-4" style="width:40%; margin-top: 7%;" for="areaselect">
@@ -940,7 +935,6 @@
                             <input type="checkbox" class="custom-control-input" id="blinkGreen">
                             <label class="custom-control-label" for="isOverlaped">Blink Green</label>
                             <button style="min-width: 2.5rem; float:right;margin-left:1vw;" class="btn  btn-outline-success btn-Run" type="button"><strong>Run &#10097;</strong></button>
-
                         </div>
                         <div class="custom-control custom-checkbox" style="margin-top:1.3vh;margin-left:1.8vw;">
                             <input type="checkbox" class="custom-control-input" id="blinkYellow">
@@ -969,6 +963,5 @@
         <button style="min-width: 2.5rem; float:right;margin-left:1vw;" class="btn  btn-outline-success btn-Apply" type="button"><strong>Apply &#10097;</strong></button>
         <button style="min-width: 2.5rem; float: right;" class="btn  btn-outline-success btn-Delete disabled" type="button"><strong>Delete &#10006;</strong></button>
     </div>
-
 </body>
 </html>
