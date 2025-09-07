@@ -83,6 +83,19 @@ namespace TrafficSignalLight.Controllers
         }
 
         [HttpGet]
+        [Route("api/SelectTemplatePattern")]
+        public async Task<IHttpActionResult> GetSelectTemplatePatterns(int id)
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entities = db.TemplatePatterns.Where(x => x.TemplateID == id)
+                    .Select(x => new { x.Template.Name, x.StartFrom, x.FinishBy })
+                    .ToList();
+                return Ok(entities);
+            }
+        }
+
+        [HttpGet]
         [Route("api/Governorates/list")]
         public async Task<IHttpActionResult> GetGoverorates()
         {
