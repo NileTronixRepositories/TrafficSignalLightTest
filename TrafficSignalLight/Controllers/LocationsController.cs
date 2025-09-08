@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using TrafficSignalLight.DB;
 using TrafficSignalLight.Dto;
@@ -126,70 +128,116 @@ namespace TrafficSignalLight.Controllers
         //[HttpPost]
         [HttpGet]
         [Route("api/Pattern/Set")]
-        public string SetPattern()
+        public string SetPattern(string name, int id, string r, string a, string g)
         {
-            //var x = Request.RequestUri;
-            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-            //string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
-            //string RedInterval = HttpUtility.ParseQueryString(x.Query).Get("R");
-            //string AmberInterval = HttpUtility.ParseQueryString(x.Query).Get("A");
-            //string GreenInterval = HttpUtility.ParseQueryString(x.Query).Get("G");
+            var x = Request.RequestUri;
+            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
+            string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
+            string RedInterval = HttpUtility.ParseQueryString(x.Query).Get("R");
+            string AmberInterval = HttpUtility.ParseQueryString(x.Query).Get("A");
+            string GreenInterval = HttpUtility.ParseQueryString(x.Query).Get("G");
 
-            //int patternid = 0;
-            //int green = 0;
-            //int amber = 0;
-            //int red = 0;
+            int patternid = 0;
+            int green = 0;
+            int amber = 0;
+            int red = 0;
 
-            //int.TryParse(ID, out patternid);
-            //int.TryParse(GreenInterval, out green);
-            //int.TryParse(AmberInterval, out amber);
-            //int.TryParse(RedInterval, out red);
+            int.TryParse(ID, out patternid);
+            int.TryParse(GreenInterval, out green);
+            int.TryParse(AmberInterval, out amber);
+            int.TryParse(RedInterval, out red);
 
-            //if (patternid < 0)
-            //{
-            //    Repository.DeleteLightPattern(patternid * -1);
-            //    return "Ok";
-            //}
-            //else
-            //{
-            //    if (!String.IsNullOrEmpty(Name) && !(red == 0 && green == 0 && amber == 0))
-            //    {
-            //        patternid = Repository.UpdateLightPattern(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
-            //    }
-            //    else
-            //        return "Incorrect pattern data!";
+            if (id < 0)
+            {
+                using (var db = new TraficLightSignesEntities2())
+                {
+                    db.LightPatterns.Remove(db.LightPatterns.FirstOrDefault(y => y.ID == id * -1));
+                    db.SaveChanges();
+                    return "Delete successfully";
+                }
+            }
+            else
+            {
+                using (var db = new TraficLightSignesEntities2())
+                {
+                    var pattern = db.LightPatterns.FirstOrDefault(y => y.ID == id);
+                    if (pattern != null)
+                    {
+                        pattern.Name = Name;
+                        pattern.Red = red;
+                        pattern.Green = green;
+                        pattern.Amber = amber;
+                        db.SaveChanges();
+                        return "Ok";
+                    }
+                }
+            }
 
-            //    if (patternid > 0)
-            //    {
-            //        return "Ok";
-            //    }
-            //}
-
-            return "Failed to save pattern";
+            return "Failed to update pattern";
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("api/Template/Set")]
-        public string Template()
+        public string Template([FromBody] UpdateTemplate updateTemplate)
         {
-            //var x = Request.RequestUri;
-            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-            //string Name = HttpUtility.ParseQueryString(x.Query).Get("Name");
+            using (var db = new TraficLightSignesEntities2())
+            {
+                if (updateTemplate.ID < 0)
+                {
+                    db.Templates.Remove(db.Templates.FirstOrDefault(y => y.ID == updateTemplate.ID * -1));
+                    db.SaveChanges();
+                    return "Delete successfully";
+                }
+                var template = db.Templates.FirstOrDefault(y => y.ID == updateTemplate.ID);
+                if (template == null)
+                {
+                    return "Cant find template";
+                }
+                template.Name = updateTemplate.Name;
+                db.SaveChanges();
 
-            //int id = 0;
-            //int.TryParse(ID, out id);
+                var existing = db.TemplatePatterns.Where(x => x.TemplateID == updateTemplate.ID).ToList();
 
-            //if (id < 0)
-            //{
-            //    Repository.DeleteTemplate(id * -1);
-            //    return "Template deleted successfully";
-            //}
+                var incoming = (updateTemplate.Patterns ?? new List<UpdateTemplatePattern>()).ToList();
 
-            //id = Repository.UpdateTemplate(new Template() { ID = id, Name = Name });
-            //if (id > 0)
-            //{
-            //    return "Ok#" + id.ToString();
-            //}
+                var incomingDistinct = incoming
+                    .GroupBy(p => p.LightPatternID)
+                    .Select(g => g.First())
+                    .ToList();
+
+                var incomingIds = new HashSet<int>(incomingDistinct.Select(p => p.LightPatternID));
+
+                var toRemove = existing.Where(e => !incomingIds.Contains(e.PetternID)).ToList();
+
+                if (toRemove.Count > 0)
+                    db.TemplatePatterns.RemoveRange(toRemove);
+
+                foreach (var item in updateTemplate.Patterns)
+                {
+                    var entity = existing.FirstOrDefault(x => x.PetternID == item.LightPatternID);
+
+                    if (entity == null)
+                    {
+                        db.TemplatePatterns.Add(new TemplatePattern() { TemplateID = updateTemplate.ID, PetternID = item.LightPatternID, StartFrom = item.StartFrom, FinishBy = item.FinishBy });
+                        db.SaveChanges();
+
+                    }
+                    else
+                    {
+                        entity.StartFrom = item.StartFrom;
+                        entity.FinishBy = item.FinishBy;
+
+                    }
+
+                }
+                db.SaveChanges();
+
+
+
+
+
+            }
+
 
             return "Failed to save pattern";
         }
@@ -198,31 +246,31 @@ namespace TrafficSignalLight.Controllers
         [Route("api/TemplatePattern/Set")]
         public string TemplatePattern()
         {
-            //var x = Request.RequestUri;
-            //string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
-            //string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
-            //string PatternID = HttpUtility.ParseQueryString(x.Query).Get("PatternID");
-            //string StartFrom = HttpUtility.ParseQueryString(x.Query).Get("StartFrom");
-            //string FinishBy = HttpUtility.ParseQueryString(x.Query).Get("FinishBy");
+            var x = Request.RequestUri;
+            string ID = HttpUtility.ParseQueryString(x.Query).Get("ID");
+            string TemplateID = HttpUtility.ParseQueryString(x.Query).Get("TemplateID");
+            string PatternID = HttpUtility.ParseQueryString(x.Query).Get("PatternID");
+            string StartFrom = HttpUtility.ParseQueryString(x.Query).Get("StartFrom");
+            string FinishBy = HttpUtility.ParseQueryString(x.Query).Get("FinishBy");
 
-            //int id = 0;
-            //int patternid = 0;
-            //int templateid = 0;
-            //TimeSpan startfrom = new TimeSpan(0, 0, 0);
-            //TimeSpan finishby = new TimeSpan(0, 0, 0);
+            int id = 0;
+            int patternid = 0;
+            int templateid = 0;
+            TimeSpan startfrom = new TimeSpan(0, 0, 0);
+            TimeSpan finishby = new TimeSpan(0, 0, 0);
 
-            //int.TryParse(ID, out id);
-            //int.TryParse(TemplateID, out templateid);
-            //int.TryParse(PatternID, out patternid);
-            //TimeSpan.TryParse(StartFrom, out startfrom);
-            //TimeSpan.TryParse(FinishBy, out finishby);
+            int.TryParse(ID, out id);
+            int.TryParse(TemplateID, out templateid);
+            int.TryParse(PatternID, out patternid);
+            TimeSpan.TryParse(StartFrom, out startfrom);
+            TimeSpan.TryParse(FinishBy, out finishby);
 
-            ////patternid = Repository.UpdateTemplatePatterns(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
+            //patternid = Repository.UpdateTemplatePatterns(new LightPattern() { ID = patternid, Name = Name, Amber = amber, Green = green, Red = red, GreenAmberOverlab = false, Pedstrain = 0, ShowPedstrainCounter = false, ShowSigneCounter = false });
 
-            //if (patternid > 0)
-            //{
-            //    return "Ok";
-            //}
+            if (patternid > 0)
+            {
+                return "Ok";
+            }
 
             return "Failed to save pattern";
         }
@@ -487,6 +535,20 @@ namespace TrafficSignalLight.Controllers
 
             public int TcpPort { get; set; } = 502; // حسب جهازك
             public int? DeviceId { get; set; }      // إن ما أُرسِلش، هنشتقّه من SignId (ID)
+        }
+
+        public class UpdateTemplate
+        {
+            public string Name { get; set; }
+            public int ID { get; set; }
+            public List<UpdateTemplatePattern> Patterns { get; set; }
+        }
+
+        public class UpdateTemplatePattern
+        {
+            public int LightPatternID { get; set; }
+            public TimeSpan StartFrom { get; set; }
+            public TimeSpan FinishBy { get; set; }
         }
     }
 }
