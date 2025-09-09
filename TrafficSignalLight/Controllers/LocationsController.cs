@@ -220,24 +220,15 @@ namespace TrafficSignalLight.Controllers
                     {
                         db.TemplatePatterns.Add(new TemplatePattern() { TemplateID = updateTemplate.ID, PetternID = item.LightPatternID, StartFrom = item.StartFrom, FinishBy = item.FinishBy });
                         db.SaveChanges();
-
                     }
                     else
                     {
                         entity.StartFrom = item.StartFrom;
                         entity.FinishBy = item.FinishBy;
-
                     }
-
                 }
                 db.SaveChanges();
-
-
-
-
-
             }
-
 
             return "Failed to save pattern";
         }
