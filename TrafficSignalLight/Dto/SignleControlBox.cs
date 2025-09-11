@@ -8,5 +8,6 @@
         public string IpAddress { get; set; }
         public int AreaId { get; set; }
         public int ID { get; set; }
+        public int LightPatternId { get; set; }
     }
 }

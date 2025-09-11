@@ -58,7 +58,8 @@ namespace TrafficSignalLight.Controllers
                         Latitude = x.Latitude,
                         Longitude = x.Longitude,
                         IpAddress = x.IPAddress,
-                        AreaId = x.AreaID
+                        AreaId = x.AreaID,
+                        LightPatternId = x.LightPatternID
                     }).ToList();
                 var test = entities;
 
@@ -89,7 +90,7 @@ namespace TrafficSignalLight.Controllers
         {
             public int? SignId { get; set; }
             public string Ip { get; set; }         // بديل لـ SignId (اختياري)
-
+            public int LightPatternId { get; set; } = 0;
             public bool UseTcp { get; set; }       // افتراضي HTTP
             public int TcpPort { get; set; } = 9000;
 
@@ -178,7 +179,11 @@ namespace TrafficSignalLight.Controllers
 
             using (var db = CreateDb())
             {
-                // 1) Resolve sign
+                if (req.LightPatternId > 0)
+                {
+                    db.SigneControlBoxes.FirstOrDefault(x => x.ID == req.SignId).LightPatternID = req.LightPatternId;
+                    db.SaveChanges();
+                }
                 var q = db.SigneControlBoxes.AsQueryable();
                 if ((req.SignId ?? 0) > 0) q = q.Where(s => s.ID == req.SignId.Value);
                 else q = q.Where(s => s.IPAddress == req.Ip);

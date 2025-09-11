@@ -176,6 +176,20 @@ namespace TrafficSignalLight.Controllers
             return "Failed to update pattern";
         }
 
+        [HttpGet]
+        [Route("api/add/pattern")]
+        public string AddPattern(string name, int red, int amber, int green)
+        {
+            using (var db = new TraficLightSignesEntities2())
+            {
+                var entity = new LightPattern() { Name = name, Red = red, Amber = amber, Green = green };
+                db.LightPatterns.Add(entity);
+                db.SaveChanges();
+                return "Ok";
+            }
+            return "failed to add pattern";
+        }
+
         [HttpPost]
         [Route("api/Template/Set")]
         public string Template([FromBody] UpdateTemplate updateTemplate)
